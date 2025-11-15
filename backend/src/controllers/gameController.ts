@@ -23,7 +23,7 @@ export const getGameState = (req: Request, res: Response) => {
     
     // Initialize new game if not exists
     if (!gameState) {
-      gameState = gameLogicService.initializeGame(userId, 'Player');
+      gameState = gameLogicService.initializeGame(userId, 'student', 'normal');
       gameStates.set(userId, gameState);
     }
 
@@ -51,11 +51,14 @@ export const postChoice = (req: Request, res: Response) => {
     
     const choiceRequest: MakeChoiceRequest = req.body;
 
+    // Support both eventId (deprecated) and scenarioId
+    const scenarioId = choiceRequest.scenarioId || choiceRequest.eventId;
+
     // Validate request
-    if (!choiceRequest.eventId || !choiceRequest.choiceId || !choiceRequest.mood) {
+    if (!scenarioId || !choiceRequest.choiceId || !choiceRequest.mood) {
       return res.status(400).json({
         success: false,
-        error: 'Missing required fields: eventId, choiceId, or mood',
+        error: 'Missing required fields: scenarioId/eventId, choiceId, or mood',
       });
     }
 
