@@ -15,21 +15,49 @@ import { env } from '../config/env';
 export interface CreateCustomerPayload {
   first_name: string;
   last_name: string;
-  address?: string;
+  address?: {
+    street_number: string;
+    street_name: string;
+    city: string;
+    state: string;
+    zip: string;
+  };
 }
 
 export interface CreateCustomerResponse {
-  id: string;
+  code: number;
+  message: string;
+  objectCreated: {
+    _id: string;
+    first_name: string;
+    last_name: string;
+    address?: {
+      street_number: string;
+      street_name: string;
+      city: string;
+      state: string;
+      zip: string;
+    };
+  };
 }
 
 export interface CreateAccountPayload {
   type: 'Checking' | 'Savings';
   nickname: string;
-  initial_balance: number;
+  rewards: number;
+  balance: number;
 }
 
 export interface CreateAccountResponse {
-  id: string;
+  code: number;
+  message: string;
+  objectCreated: {
+    _id: string;
+    type: string;
+    nickname: string;
+    balance: number;
+    customer_id: string;
+  };
 }
 
 export interface AccountResponse {
@@ -45,7 +73,14 @@ export interface CreateTransactionPayload {
 }
 
 export interface CreateTransactionResponse {
-  id: string;
+  code: number;
+  message: string;
+  objectCreated: {
+    _id: string;
+    medium: string;
+    amount: number;
+    description?: string;
+  };
 }
 
 export class NessieError extends Error {
@@ -83,7 +118,9 @@ export class NessieService {
     path: string,
     body?: unknown
   ): Promise<T> {
-    const url = `${this.baseUrl}${path}`;
+    // Add API key as query parameter (Nessie API convention)
+    const separator = path.includes('?') ? '&' : '?';
+    const url = `${this.baseUrl}${path}${separator}key=${this.apiKey}`;
     let lastError: Error | null = null;
 
     for (let attempt = 0; attempt <= this.maxRetries; attempt++) {
@@ -95,7 +132,6 @@ export class NessieService {
           method,
           headers: {
             'Content-Type': 'application/json',
-            'x-api-key': this.apiKey, // Common header name for API keys
           },
           body: body ? JSON.stringify(body) : undefined,
           signal: controller.signal,
@@ -218,8 +254,8 @@ export class NessieService {
     if (!customerId) {
       throw new NessieError('customerId is required');
     }
-    if (!payload.type || !payload.nickname || payload.initial_balance === undefined) {
-      throw new NessieError('type, nickname, and initial_balance are required');
+    if (!payload.type || !payload.nickname || payload.balance === undefined || payload.rewards === undefined) {
+      throw new NessieError('type, nickname, balance, and rewards are required');
     }
     if (!['Checking', 'Savings'].includes(payload.type)) {
       throw new NessieError('type must be "Checking" or "Savings"');
