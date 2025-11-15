@@ -342,6 +342,7 @@ export type AgentType =
   | 'spenderSam'  // Encourages enjoying money now
   | 'saverSiya'   // Promotes aggressive saving
   | 'crisis'      // Alerts to urgent financial issues
+  | 'crisisCoach' // Crisis management and triage
   | 'futureYou'   // Long-term perspective
   | 'translator'; // Explains financial jargon
 
