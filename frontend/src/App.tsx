@@ -2,6 +2,9 @@ import React, { useState } from 'react';
 import GameScreen from './pages/GameScreen';
 import InvestingDistrict from './pages/InvestingDistrict';
 import SettingsPanel from './components/SettingsPanel';
+import WelcomePage from './pages/WelcomePage';
+import InstalledPage from './pages/InstalledPage';
+import { usePWA } from './hooks/usePWA';
 
 type View = 'game' | 'investing' | 'settings';
 
@@ -10,6 +13,18 @@ type View = 'game' | 'investing' | 'settings';
  */
 const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<View>('game');
+  const [hasSeenWelcome, setHasSeenWelcome] = useState(false);
+  const { isInstalled, isInstallable, handleInstall } = usePWA();
+
+  // Show welcome page if not installed
+  if (!isInstalled && !hasSeenWelcome) {
+    return <WelcomePage onInstall={handleInstall} isInstallable={isInstallable} />;
+  }
+
+  // Show thank you page if just installed
+  if (isInstalled && !hasSeenWelcome) {
+    return <InstalledPage onContinue={() => setHasSeenWelcome(true)} />;
+  }
 
   const renderView = () => {
     switch (currentView) {
