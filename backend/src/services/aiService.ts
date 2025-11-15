@@ -1,68 +1,522 @@
-import { AgentType } from '../models/GameState';
+import { env } from '../config/env';
 
 /**
- * Service for generating AI agent messages
- * TODO: Integrate with actual LLM provider (OpenAI, Anthropic, etc.)
+ * Provider-agnostic LLM adapter and agent prompt templates
+ * Supports OpenAI, Anthropic, and Google Gemini APIs
  */
 
-export interface AgentMessageRequest {
-  agentType: AgentType;
-  context: {
-    eventDescription?: string;
-    userBalance?: number;
-    mood?: string;
-    previousChoices?: string[];
+// ============================================================================
+// Type Definitions
+// ============================================================================
+
+export interface ChatMessage {
+  role: 'system' | 'user' | 'assistant';
+  content: string;
+}
+
+export interface ChatOptions {
+  temperature?: number;
+  maxTokens?: number;
+}
+
+export interface ChatResponse {
+  text: string;
+  tokens?: number;
+}
+
+export interface AIProvider {
+  chat(messages: ChatMessage[], opts?: ChatOptions): Promise<ChatResponse>;
+}
+
+export interface PromptTemplate {
+  system: string;
+  user: string;
+}
+
+export interface AgentContext {
+  playerRole?: string;
+  difficulty?: string;
+  currentBalance?: number;
+  scenarioDescription?: string;
+  recentDecisions?: string[];
+  mood?: string;
+  [key: string]: unknown;
+}
+
+export class AIServiceError extends Error {
+  constructor(
+    message: string,
+    public provider?: string,
+    public statusCode?: number
+  ) {
+    super(message);
+    this.name = 'AIServiceError';
+  }
+}
+
+// ============================================================================
+// Provider Adapters
+// ============================================================================
+
+/**
+ * OpenAI API Adapter (GPT-4, GPT-3.5-turbo, etc.)
+ * TODO: Implement actual OpenAI API calls when API key is available
+ */
+export class OpenAIAdapter implements AIProvider {
+  private readonly apiKey: string;
+  private readonly baseUrl: string = 'https://api.openai.com/v1';
+  private readonly model: string;
+
+  constructor(apiKey: string, model: string = 'gpt-4') {
+    this.apiKey = apiKey;
+    this.model = model;
+  }
+
+  async chat(messages: ChatMessage[], opts?: ChatOptions): Promise<ChatResponse> {
+    try {
+      const response = await fetch(`${this.baseUrl}/chat/completions`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${this.apiKey}`,
+        },
+        body: JSON.stringify({
+          model: this.model,
+          messages: messages.map((m) => ({ role: m.role, content: m.content })),
+          temperature: opts?.temperature ?? 0.7,
+          max_tokens: opts?.maxTokens ?? 500,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new AIServiceError(
+          `OpenAI API error: ${response.statusText}`,
+          'openai',
+          response.status
+        );
+      }
+
+      const data = await response.json();
+      return {
+        text: data.choices[0]?.message?.content || '',
+        tokens: data.usage?.total_tokens,
+      };
+    } catch (error) {
+      if (error instanceof AIServiceError) throw error;
+      throw new AIServiceError(
+        `OpenAI request failed: ${(error as Error).message}`,
+        'openai'
+      );
+    }
+  }
+}
+
+/**
+ * Anthropic API Adapter (Claude models)
+ * TODO: Implement actual Anthropic API calls when API key is available
+ */
+export class AnthropicAdapter implements AIProvider {
+  private readonly apiKey: string;
+  private readonly baseUrl: string = 'https://api.anthropic.com/v1';
+  private readonly model: string;
+
+  constructor(apiKey: string, model: string = 'claude-3-sonnet-20240229') {
+    this.apiKey = apiKey;
+    this.model = model;
+  }
+
+  async chat(messages: ChatMessage[], opts?: ChatOptions): Promise<ChatResponse> {
+    try {
+      // Extract system message if present
+      const systemMessage = messages.find((m) => m.role === 'system')?.content || '';
+      const conversationMessages = messages
+        .filter((m) => m.role !== 'system')
+        .map((m) => ({ role: m.role, content: m.content }));
+
+      const response = await fetch(`${this.baseUrl}/messages`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': this.apiKey,
+          'anthropic-version': '2023-06-01',
+        },
+        body: JSON.stringify({
+          model: this.model,
+          system: systemMessage,
+          messages: conversationMessages,
+          temperature: opts?.temperature ?? 0.7,
+          max_tokens: opts?.maxTokens ?? 500,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new AIServiceError(
+          `Anthropic API error: ${response.statusText}`,
+          'anthropic',
+          response.status
+        );
+      }
+
+      const data = await response.json();
+      return {
+        text: data.content[0]?.text || '',
+        tokens: data.usage?.input_tokens + data.usage?.output_tokens,
+      };
+    } catch (error) {
+      if (error instanceof AIServiceError) throw error;
+      throw new AIServiceError(
+        `Anthropic request failed: ${(error as Error).message}`,
+        'anthropic'
+      );
+    }
+  }
+}
+
+/**
+ * Google Gemini API Adapter
+ * Supports Gemini Pro and other Google AI models
+ */
+export class GeminiAdapter implements AIProvider {
+  private readonly apiKey: string;
+  private readonly baseUrl: string = 'https://generativelanguage.googleapis.com/v1beta';
+  private readonly model: string;
+
+  constructor(apiKey: string, model: string = 'gemini-pro') {
+    this.apiKey = apiKey;
+    this.model = model;
+  }
+
+  async chat(messages: ChatMessage[], opts?: ChatOptions): Promise<ChatResponse> {
+    try {
+      // Gemini uses a different message format - combine system and user messages
+      const systemMessage = messages.find((m) => m.role === 'system')?.content || '';
+      const userMessages = messages.filter((m) => m.role !== 'system');
+
+      // Format messages for Gemini
+      const parts = userMessages.map((m) => {
+        if (m.role === 'user') {
+          return { text: systemMessage ? `${systemMessage}\n\n${m.content}` : m.content };
+        }
+        // For assistant messages, we'll need to use chat history format
+        return { text: m.content };
+      });
+
+      const response = await fetch(
+        `${this.baseUrl}/models/${this.model}:generateContent?key=${this.apiKey}`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            contents: [
+              {
+                parts: [parts[parts.length - 1]], // Use the last message
+              },
+            ],
+            generationConfig: {
+              temperature: opts?.temperature ?? 0.7,
+              maxOutputTokens: opts?.maxTokens ?? 500,
+            },
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new AIServiceError(
+          `Gemini API error: ${response.statusText}`,
+          'gemini',
+          response.status
+        );
+      }
+
+      const data = await response.json();
+      const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+
+      return {
+        text,
+        tokens: data.usageMetadata?.totalTokenCount,
+      };
+    } catch (error) {
+      if (error instanceof AIServiceError) throw error;
+      throw new AIServiceError(
+        `Gemini request failed: ${(error as Error).message}`,
+        'gemini'
+      );
+    }
+  }
+}
+
+// ============================================================================
+// LLM Singleton - Auto-selects first available provider
+// ============================================================================
+
+/**
+ * Creates and returns the first available AI provider adapter
+ * Priority: Gemini (if starts with AIza) > OpenAI (if starts with sk-) > Anthropic
+ */
+function createLLMProvider(): AIProvider {
+  const apiKey = env.ai.apiKey;
+  const model = env.ai.model;
+
+  // Detect provider based on API key format
+  if (apiKey.startsWith('AIza')) {
+    // Google Gemini API key format
+    console.log('🤖 Using Google Gemini adapter');
+    return new GeminiAdapter(apiKey, model);
+  } else if (apiKey.startsWith('sk-')) {
+    // OpenAI API key format
+    console.log('🤖 Using OpenAI adapter');
+    return new OpenAIAdapter(apiKey, model);
+  } else if (apiKey.startsWith('sk-ant-')) {
+    // Anthropic API key format
+    console.log('🤖 Using Anthropic adapter');
+    return new AnthropicAdapter(apiKey, model);
+  } else {
+    // Default to Gemini for development
+    console.log('⚠️  Unknown API key format, defaulting to Gemini adapter');
+    return new GeminiAdapter(apiKey, model);
+  }
+}
+
+export const llm: AIProvider = createLLMProvider();
+
+// ============================================================================
+// Agent Prompt Templates
+// ============================================================================
+
+/**
+ * Mentor Agent - Calm financial guide
+ * Plain language, explains outcomes, no stock tips
+ */
+export function mentorPrompt(context: AgentContext): PromptTemplate {
+  return {
+    system: `You are a calm, patient financial mentor helping someone learn about money management. 
+Your role:
+- Use plain, everyday language (no jargon)
+- Explain the reasoning behind financial decisions
+- Focus on general principles, not specific investment advice
+- Never give stock tips or recommend specific securities
+- Acknowledge that everyone's situation is different
+- Keep responses under 120 words
+- Be encouraging and educational
+
+Context: Player is ${context.playerRole || 'learning'} on ${context.difficulty || 'normal'} difficulty.
+Current mood: ${context.mood || 'neutral'}.`,
+    user: `The scenario is: ${context.scenarioDescription || 'financial decision'}
+
+Help me understand what to consider when making this choice. What would be the general outcomes of different approaches?`,
   };
 }
 
-export class AIService {
-  /**
-   * Get a message from a specific AI agent
-   * TODO: Implement actual LLM API call with agent-specific prompts
-   */
-  async getAgentMessage(request: AgentMessageRequest): Promise<string> {
-    console.log(`TODO: Generate AI message for agent ${request.agentType}`);
-    
-    // Mock responses based on agent type
-    const mockResponses: Record<AgentType, string> = {
-      mentor: "Welcome to FinQuest! I'm here to guide you through your financial journey. Let's start by understanding your current situation and goals.",
-      spenderSam: "Hey! Life is short, you know? Sometimes you gotta treat yourself. That new gadget looks pretty cool, right?",
-      saverSiya: "Have you considered putting that money into your savings instead? Building an emergency fund is crucial for financial stability.",
-      crisis: "URGENT: An unexpected expense has appeared! This is a critical moment that requires immediate attention.",
-      futureYou: "Looking back from 10 years in the future, you'll thank yourself for the smart choices you make today. Think long-term.",
-      translator: "Let me break down that financial jargon for you in simple terms you can understand...",
+/**
+ * Spender Sam Agent - Fun-first with awareness
+ * Acknowledges trade-offs, validates enjoyment
+ */
+export function spenderSamPrompt(context: AgentContext): PromptTemplate {
+  return {
+    system: `You are Spender Sam, a friend who believes life is meant to be enjoyed now.
+Your personality:
+- Fun-loving and encouraging of treating yourself
+- Honest about trade-offs (but not preachy)
+- Validates the emotional value of purchases
+- Acknowledges that enjoying today matters too
+- Keep responses under 120 words
+- Use casual, friendly language
+
+Context: Player has $${context.currentBalance || '??'} available.
+Scenario: ${context.scenarioDescription || 'spending opportunity'}`,
+    user: `What do you think about this situation? Should I go for it?`,
+  };
+}
+
+/**
+ * Saver Siya Agent - Conservative planner
+ * Emphasizes emergency fund, planning, security
+ */
+export function saverSiyaPrompt(context: AgentContext): PromptTemplate {
+  return {
+    system: `You are Saver Siya, a thoughtful friend who values financial security and planning.
+Your approach:
+- Emphasize building an emergency fund (3-6 months expenses)
+- Encourage planning for the future
+- Highlight the peace of mind that comes with savings
+- Not judgmental, but help see long-term benefits
+- Keep responses under 120 words
+- Use encouraging, supportive language
+
+Context: Player's current balance: $${context.currentBalance || '??'}
+Recent decisions: ${context.recentDecisions?.join(', ') || 'just starting'}`,
+    user: `Looking at this scenario: ${context.scenarioDescription || 'financial decision'}
+
+What would you suggest from a savings perspective?`,
+  };
+}
+
+/**
+ * Crisis Coach Agent - Emergency triage specialist
+ * Step-by-step for tough situations, warns about debt traps
+ */
+export function crisisCoachPrompt(context: AgentContext): PromptTemplate {
+  return {
+    system: `You are a Crisis Coach helping someone navigate a difficult financial situation.
+Your approach:
+- Provide step-by-step triage: housing first, then food, then essentials
+- Be calm and practical, not alarmist
+- Warn about high-interest debt traps (payday loans, credit cards)
+- Suggest resources when appropriate (food banks, payment plans)
+- Keep responses under 120 words
+- Be compassionate and non-judgmental
+
+Context: Player is in ${context.difficulty || 'challenging'} mode.
+Situation: ${context.scenarioDescription || 'financial pressure'}`,
+    user: `I'm facing this challenge. What should I prioritize first?`,
+  };
+}
+
+/**
+ * Future You Agent - Outcome projector
+ * Shows 3-6 month projections based on current trends
+ */
+export function futureYouPrompt(context: AgentContext): PromptTemplate {
+  return {
+    system: `You are Future You, showing a glimpse of where current financial trends lead in 3-6 months.
+Your style:
+- Project simple, realistic outcomes based on current behavior
+- Use concrete numbers when possible
+- Not judgmental - just showing the math
+- Acknowledge that plans can change
+- Keep responses under 120 words
+- Be hopeful but realistic
+
+Context: Current balance: $${context.currentBalance || '??'}
+Recent pattern: ${context.recentDecisions?.slice(-3).join(', ') || 'just starting'}`,
+    user: `If I continue with similar decisions regarding: ${context.scenarioDescription || 'this choice'}
+
+Where might I be in 3-6 months?`,
+  };
+}
+
+/**
+ * Translator Agent - Jargon buster
+ * Defines financial terms with everyday examples
+ */
+export function translatorPrompt(term: string, context: AgentContext): PromptTemplate {
+  return {
+    system: `You are a Translator who breaks down financial jargon into plain English.
+Your format:
+- Start with a 1-2 sentence definition
+- Provide one everyday example that relates to daily life
+- Keep total response under 120 words
+- No complex terminology in your explanation
+- Be helpful and clear
+
+Context: Player is ${context.playerRole || 'learning'} about finance.`,
+    user: `Explain this financial term in simple language: "${term}"
+
+What does it mean and how does it work in everyday life?`,
+  };
+}
+
+// ============================================================================
+// Agent Reply Generator
+// ============================================================================
+
+export type AgentName =
+  | 'mentor'
+  | 'spenderSam'
+  | 'saverSiya'
+  | 'crisisCoach'
+  | 'futureYou'
+  | 'translator';
+
+export interface AgentReply {
+  agent: string;
+  message: string;
+  tokens?: number;
+}
+
+/**
+ * Generate an agent reply using the appropriate prompt template
+ * Enforces style guidelines: ≤120 words, no jargon, educational tone
+ */
+export async function generateAgentReply(
+  agentName: AgentName,
+  context: AgentContext,
+  term?: string
+): Promise<AgentReply> {
+  // Select the appropriate prompt template
+  let template: PromptTemplate;
+
+  switch (agentName) {
+    case 'mentor':
+      template = mentorPrompt(context);
+      break;
+    case 'spenderSam':
+      template = spenderSamPrompt(context);
+      break;
+    case 'saverSiya':
+      template = saverSiyaPrompt(context);
+      break;
+    case 'crisisCoach':
+      template = crisisCoachPrompt(context);
+      break;
+    case 'futureYou':
+      template = futureYouPrompt(context);
+      break;
+    case 'translator':
+      if (!term) {
+        throw new AIServiceError('Translator agent requires a term parameter');
+      }
+      template = translatorPrompt(term, context);
+      break;
+    default:
+      throw new AIServiceError(`Unknown agent: ${agentName}`);
+  }
+
+  // Build messages array
+  const messages: ChatMessage[] = [
+    { role: 'system', content: template.system },
+    { role: 'user', content: template.user },
+  ];
+
+  // Call LLM with constrained parameters
+  try {
+    const response = await llm.chat(messages, {
+      temperature: 0.7,
+      maxTokens: 200, // ~150 words max to enforce ≤120 word guideline
+    });
+
+    return {
+      agent: agentName,
+      message: response.text.trim(),
+      tokens: response.tokens,
     };
-
-    return mockResponses[request.agentType] || "Agent message not found.";
-  }
-
-  /**
-   * Generate personalized financial advice based on user state
-   * TODO: Implement comprehensive AI analysis with user data
-   */
-  async generateAdvice(
-    userState: {
-      balance: number;
-      healthScore: number;
-      recentChoices: string[];
-    }
-  ): Promise<string> {
-    console.log('TODO: Generate personalized advice using AI');
-    
-    // Mock advice
-    return "Based on your current financial situation, consider focusing on building your emergency fund before making large purchases.";
-  }
-
-  /**
-   * Analyze user's mood and adjust agent responses accordingly
-   * TODO: Implement mood-aware response generation
-   */
-  async adjustForMood(message: string, mood: string): Promise<string> {
-    console.log(`TODO: Adjust message tone for mood: ${mood}`);
-    
-    // For now, just return the original message
-    return message;
+  } catch (error) {
+    throw new AIServiceError(
+      `Failed to generate ${agentName} reply: ${(error as Error).message}`,
+      agentName
+    );
   }
 }
 
-export const aiService = new AIService();
+/**
+ * Utility: Generate replies from multiple agents in parallel
+ * Useful for showing different perspectives on the same scenario
+ */
+export async function generateMultipleAgentReplies(
+  agents: AgentName[],
+  context: AgentContext,
+  term?: string
+): Promise<AgentReply[]> {
+  const replies = await Promise.allSettled(
+    agents.map((agent) => generateAgentReply(agent, context, term))
+  );
+
+  return replies
+    .filter((result) => result.status === 'fulfilled')
+    .map((result) => (result as PromiseFulfilledResult<AgentReply>).value);
+}
