@@ -1,75 +1,40 @@
 import express from 'express';
 import cors from 'cors';
-import { config } from './config/env';
-import gameRoutes from './routes/gameRoutes';
-import agentRoutes from './routes/agentRoutes';
-import healthRoutes from './routes/healthRoutes';
+import dotenv from 'dotenv';
+
+// Load environment variables
+dotenv.config();
 
 const app = express();
+
+// Get configuration from environment
+const PORT = process.env.PORT || 4000;
+const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
 
 /**
  * Middleware
  */
 app.use(cors({
-  origin: config.frontendUrl,
+  origin: FRONTEND_URL,
   credentials: true,
 }));
 
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
-// Request logging middleware
-app.use((req, res, next) => {
-  console.log(`${req.method} ${req.path}`);
-  next();
-});
 
 /**
  * Routes
  */
-app.use('/api/health', healthRoutes);
-app.use('/api/game', gameRoutes);
-app.use('/api/agent', agentRoutes);
-
-// Root endpoint
-app.get('/', (req, res) => {
-  res.json({
-    message: 'FinQuest API',
-    version: '1.0.0',
-    endpoints: {
-      health: '/api/health',
-      game: '/api/game',
-      agents: '/api/agent',
-    },
-  });
-});
-
-// 404 handler
-app.use((req, res) => {
-  res.status(404).json({
-    success: false,
-    error: 'Endpoint not found',
-  });
-});
-
-// Error handler
-app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
-  console.error('Error:', err);
-  res.status(500).json({
-    success: false,
-    error: 'Internal server error',
-  });
+// Health check endpoint
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'ok' });
 });
 
 /**
  * Start server
  */
-const PORT = config.port;
-
 app.listen(PORT, () => {
-  console.log(`🚀 FinQuest Backend running on http://localhost:${PORT}`);
-  console.log(`📊 Environment: ${config.nodeEnv}`);
-  console.log(`🌐 CORS enabled for: ${config.frontendUrl}`);
+  console.log(`🚀 Server running on http://localhost:${PORT}`);
+  console.log(`🌐 CORS enabled for: ${FRONTEND_URL}`);
 });
 
 export default app;
