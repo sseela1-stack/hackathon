@@ -8,7 +8,8 @@
     "build": "tsc",
     "start": "node dist/index.js",
     "test:apis": "ts-node-dev --transpile-only src/test-apis.ts",
-    "test:game": "ts-node-dev --transpile-only src/test-game-logic.ts"
+    "test:game": "ts-node-dev --transpile-only src/test-game-logic.ts",
+    "test:controller": "ts-node-dev --transpile-only src/test-controller.ts"
   },
   "keywords": [
     "finquest",
