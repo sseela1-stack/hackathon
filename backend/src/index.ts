@@ -5,10 +5,9 @@ import compression from 'compression';
 import pinoHttp from 'pino-http';
 import { pino } from 'pino';
 import { env, isProd } from './config/env';
-import gameRoutes from './routes/gameRoutes';
-import agentRoutes from './routes/agentRoutes';
-import healthRoutes from './routes/healthRoutes';
+import { registerRoutes } from './routes';
 import { errorHandler } from './middleware/errorHandler';
+import { mockAuth } from './middleware/mockAuth';
 import { Server } from 'http';
 
 /**
@@ -70,7 +69,7 @@ app.use(cors({
   origin: env.frontendUrl,
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Request-ID'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Request-ID', 'X-Player-ID'],
 }));
 
 /**
@@ -91,6 +90,13 @@ app.use(compression());
 app.use(httpLogger);
 
 /**
+ * Mock Authentication Middleware
+ * TODO: Replace with JWT-based authentication in production
+ * Reads x-player-id header and attaches req.playerId
+ */
+app.use(mockAuth);
+
+/**
  * Health Check Route
  */
 app.get('/api/health', (req: Request, res: Response) => {
@@ -104,10 +110,9 @@ app.get('/api/health', (req: Request, res: Response) => {
 
 /**
  * API Routes
+ * Mounted via registerRoutes helper
  */
-app.use('/api/game', gameRoutes);
-app.use('/api/agent', agentRoutes);
-app.use('/api/health', healthRoutes);
+registerRoutes(app);
 
 /**
  * Root Endpoint

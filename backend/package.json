@@ -19,7 +19,8 @@
     "test:errors": "ts-node-dev --transpile-only src/test-error-handler.ts",
     "test:rng": "ts-node-dev --transpile-only src/test-rng.ts",
     "test:health-helpers": "ts-node-dev --transpile-only src/test-health-helpers.ts",
-    "test:playbook": "ts-node-dev --transpile-only src/test-playbook.ts"
+    "test:playbook": "ts-node-dev --transpile-only src/test-playbook.ts",
+    "test:auth": "ts-node-dev --transpile-only src/test-auth.ts"
   },
   "keywords": [
     "finquest",
