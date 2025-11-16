@@ -1,0 +1,19 @@
+{
+  "id": "scn_9557525c6e",
+  "name": "Therapy Session Copay",
+  "type": "expense",
+  "tags": [
+    "healthcare"
+  ],
+  "description": "Therapy Session Copay health/wellness expense.",
+  "amount": {
+    "dist": "uniform",
+    "low": 20,
+    "high": 60
+  },
+  "base_daily_prob": 0.01,
+  "deterministic": false,
+  "schedule": null,
+  "cooldown_days": 14,
+  "triggers": []
+}

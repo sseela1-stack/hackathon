@@ -1,0 +1,22 @@
+{
+  "id": "scn_2e58d68c7b",
+  "name": "Sports Event",
+  "type": "expense",
+  "tags": [
+    "entertainment",
+    "sports",
+    "social"
+  ],
+  "description": "Sports Event discretionary spend.",
+  "amount": {
+    "dist": "lognormal",
+    "mean": 85,
+    "sigma": 65,
+    "min": 25
+  },
+  "base_daily_prob": 0.01,
+  "deterministic": false,
+  "schedule": null,
+  "cooldown_days": 20,
+  "triggers": []
+}

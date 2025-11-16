@@ -1,0 +1,20 @@
+{
+  "id": "scn_1c34797ed6",
+  "name": "Hotel Booking",
+  "type": "expense",
+  "tags": [
+    "travel"
+  ],
+  "description": "Hotel Booking planned spend.",
+  "amount": {
+    "dist": "lognormal",
+    "mean": 300,
+    "sigma": 180,
+    "min": 120
+  },
+  "base_daily_prob": 0.004,
+  "deterministic": false,
+  "schedule": null,
+  "cooldown_days": 45,
+  "triggers": []
+}

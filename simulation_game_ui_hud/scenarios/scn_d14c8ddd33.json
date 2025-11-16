@@ -1,0 +1,25 @@
+{
+  "id": "scn_d14c8ddd33",
+  "name": "Credit Card Minimum Payment",
+  "type": "bill",
+  "tags": [
+    "debt",
+    "recurring"
+  ],
+  "description": "Recurring monthly bill: Credit Card Minimum Payment.",
+  "amount": {
+    "dist": "lognormal",
+    "mean": 45,
+    "sigma": 9.0,
+    "min": 22.5
+  },
+  "base_daily_prob": 0.0,
+  "deterministic": true,
+  "schedule": {
+    "type": "every_n_days",
+    "n": 30,
+    "offset": 22
+  },
+  "cooldown_days": 0,
+  "triggers": []
+}

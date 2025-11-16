@@ -1,0 +1,26 @@
+{
+  "id": "scn_a622d9ef3a",
+  "name": "Mortgage",
+  "type": "bill",
+  "tags": [
+    "mortgage",
+    "housing",
+    "recurring"
+  ],
+  "description": "Recurring monthly bill: Mortgage.",
+  "amount": {
+    "dist": "lognormal",
+    "mean": 1800,
+    "sigma": 360.0,
+    "min": 900.0
+  },
+  "base_daily_prob": 0.0,
+  "deterministic": true,
+  "schedule": {
+    "type": "every_n_days",
+    "n": 30,
+    "offset": 2
+  },
+  "cooldown_days": 0,
+  "triggers": []
+}

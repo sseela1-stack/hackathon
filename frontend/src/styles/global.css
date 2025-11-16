@@ -68,7 +68,7 @@ body {
 
 /* Bottom HUD/nav safe-area */
 .bottom-safe {
-  padding-bottom: max(var(--safe-bottom), 16px);
+  padding-bottom: var(--safe-bottom, 0px);
 }
 
 /* Top safe area (for status bar / dynamic island overlap) */

@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Scenario Selection Game</title>
+  <link rel="stylesheet" href="/static/style.css"/>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">Scenario Selection Game</div>
+    <div class="status">
+      <button id="btn-new-game" class="btn btn-secondary">New Game</button>
+    </div>
+  </header>
+
+  <!-- HUD panel (icons + health bar) -->
+  <section class="hud">
+    <div class="hud-top">
+      <div class="pill pill-month"><span class="emoji">📅</span><span id="hud-month">M—</span></div>
+      <div class="pill pill-health"><span class="emoji">❤️</span><span id="hud-health-text">—/100</span></div>
+      <div class="pill pill-trophy"><span class="emoji">🏆</span><span id="hud-trophies">0/5</span></div>
+    </div>
+    <div class="hud-cards">
+      <div class="hud-card">
+        <div class="hc-emoji">💵</div>
+        <div class="hc-amount" id="hud-checking">$0</div>
+      </div>
+      <div class="hud-card">
+        <div class="hc-emoji">🏦</div>
+        <div class="hc-amount" id="hud-savings">$0</div>
+      </div>
+      <div class="hud-card">
+        <div class="hc-emoji">📈</div>
+        <div class="hc-amount" id="hud-invest">$0</div>
+      </div>
+    </div>
+    <div class="hud-healthbar">
+      <div id="hud-healthbar-inner"></div>
+    </div>
+  </section>
+
+  <main class="container">
+    <section class="panel" id="panel-offers">
+      <div class="panel-header">
+        <h2>Today's Offers</h2>
+        <div class="panel-actions">
+          <button id="btn-autopick" class="btn btn-secondary">Auto-pick Today</button>
+          <button id="btn-commit" class="btn btn-primary">Commit Choices</button>
+        </div>
+      </div>
+      <div id="offers-list" class="offers"></div>
+    </section>
+
+    <section class="panel" id="panel-committed">
+      <div class="panel-header">
+        <h2>Committed Events (Today)</h2>
+      </div>
+      <div id="committed-list" class="committed"></div>
+    </section>
+
+    <section class="panel" id="panel-history">
+      <div class="panel-header">
+        <h2>Recent History</h2>
+      </div>
+      <div id="history-list" class="history"></div>
+    </section>
+  </main>
+
+  <!-- New Game Modal -->
+  <div id="modal" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Start a New Game</h3>
+        <button id="modal-close" class="btn-icon" aria-label="Close">×</button>
+      </div>
+      <div class="modal-body">
+        <form id="form-start">
+          <div class="grid-2">
+            <label>
+              Player Name
+              <input type="text" name="name" value="Player" required />
+            </label>
+            <label>
+              Base Balance ($)
+              <input type="number" name="base_balance" step="50" value="1500" required />
+            </label>
+          </div>
+          <div class="grid-2">
+            <label>
+              Segment
+              <select name="segment_key" id="segment-select"></select>
+            </label>
+            <label>
+              Mood
+              <select name="mood" id="mood-select"></select>
+            </label>
+          </div>
+          <fieldset class="fieldset">
+            <legend>Pay Cycle</legend>
+            <div class="grid-3">
+              <label>
+                Type
+                <select name="pay_type">
+                  <option value="weekly">weekly</option>
+                  <option value="biweekly" selected>biweekly</option>
+                  <option value="semimonthly">semimonthly</option>
+                  <option value="monthly">monthly</option>
+                </select>
+              </label>
+              <label>
+                Start Day
+                <input type="number" name="pay_start_day" min="1" max="30" value="1" />
+              </label>
+              <label>
+                Amount ($)
+                <input type="number" name="pay_amount" step="50" value="2200" />
+              </label>
+            </div>
+          </fieldset>
+          <div class="actions">
+            <button type="submit" class="btn btn-primary">Start</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

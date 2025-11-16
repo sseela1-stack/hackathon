@@ -1,0 +1,20 @@
+{
+  "id": "scn_b8ca96edf2",
+  "name": "Television Upgrade",
+  "type": "expense",
+  "tags": [
+    "electronics"
+  ],
+  "description": "Television Upgrade large purchase.",
+  "amount": {
+    "dist": "lognormal",
+    "mean": 800,
+    "sigma": 300,
+    "min": 300
+  },
+  "base_daily_prob": 0.002,
+  "deterministic": false,
+  "schedule": null,
+  "cooldown_days": 270,
+  "triggers": []
+}

@@ -1,0 +1,20 @@
+{
+  "id": "scn_2efedb46d5",
+  "name": "Course Enrollment Fee",
+  "type": "expense",
+  "tags": [
+    "education"
+  ],
+  "description": "Course Enrollment Fee academic cost.",
+  "amount": {
+    "dist": "lognormal",
+    "mean": 250,
+    "sigma": 120,
+    "min": 80
+  },
+  "base_daily_prob": 0.01,
+  "deterministic": false,
+  "schedule": null,
+  "cooldown_days": 60,
+  "triggers": []
+}

@@ -1,0 +1,26 @@
+{
+  "id": "scn_582a5e755f",
+  "name": "Coding Platform Pro",
+  "type": "bill",
+  "tags": [
+    "subscriptions",
+    "education",
+    "recurring"
+  ],
+  "description": "Recurring monthly bill: Coding Platform Pro.",
+  "amount": {
+    "dist": "lognormal",
+    "mean": 20,
+    "sigma": 4.0,
+    "min": 10.0
+  },
+  "base_daily_prob": 0.0,
+  "deterministic": true,
+  "schedule": {
+    "type": "every_n_days",
+    "n": 30,
+    "offset": 21
+  },
+  "cooldown_days": 0,
+  "triggers": []
+}

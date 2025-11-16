@@ -1,0 +1,20 @@
+{
+  "id": "scn_08c0c0ccea",
+  "name": "Furniture Purchase",
+  "type": "expense",
+  "tags": [
+    "home_improvement"
+  ],
+  "description": "Furniture Purchase large purchase.",
+  "amount": {
+    "dist": "lognormal",
+    "mean": 550,
+    "sigma": 300,
+    "min": 200
+  },
+  "base_daily_prob": 0.004,
+  "deterministic": false,
+  "schedule": null,
+  "cooldown_days": 120,
+  "triggers": []
+}

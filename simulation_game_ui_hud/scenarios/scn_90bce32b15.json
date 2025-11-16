@@ -1,0 +1,21 @@
+{
+  "id": "scn_90bce32b15",
+  "name": "Student Loan Extra Payment",
+  "type": "expense",
+  "tags": [
+    "debt",
+    "student_loan"
+  ],
+  "description": "Student Loan Extra Payment discretionary outflow.",
+  "amount": {
+    "dist": "lognormal",
+    "mean": 200,
+    "sigma": 120,
+    "min": 50
+  },
+  "base_daily_prob": 0.008,
+  "deterministic": false,
+  "schedule": null,
+  "cooldown_days": 10,
+  "triggers": []
+}

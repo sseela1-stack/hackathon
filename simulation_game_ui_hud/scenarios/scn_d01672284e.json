@@ -1,0 +1,20 @@
+{
+  "id": "scn_d01672284e",
+  "name": "Electronics Accessory",
+  "type": "expense",
+  "tags": [
+    "shopping",
+    "electronics"
+  ],
+  "description": "Electronics Accessory discretionary spend.",
+  "amount": {
+    "dist": "uniform",
+    "low": 15,
+    "high": 90
+  },
+  "base_daily_prob": 0.03,
+  "deterministic": false,
+  "schedule": null,
+  "cooldown_days": 7,
+  "triggers": []
+}

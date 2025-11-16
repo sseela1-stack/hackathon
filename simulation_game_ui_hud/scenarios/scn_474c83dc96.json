@@ -1,0 +1,25 @@
+{
+  "id": "scn_474c83dc96",
+  "name": "Coffee Shop",
+  "type": "expense",
+  "tags": [
+    "dining",
+    "leisure",
+    "convenience"
+  ],
+  "description": "Coffee Shop discretionary spend.",
+  "amount": {
+    "dist": "choice",
+    "options": [
+      4,
+      6,
+      8,
+      10
+    ]
+  },
+  "base_daily_prob": 0.22,
+  "deterministic": false,
+  "schedule": null,
+  "cooldown_days": 0,
+  "triggers": []
+}

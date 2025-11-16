@@ -1,0 +1,25 @@
+{
+  "id": "scn_177d053a40",
+  "name": "Groceries",
+  "type": "expense",
+  "tags": [
+    "groceries",
+    "recurring"
+  ],
+  "description": "Regular weekly spend on groceries.",
+  "amount": {
+    "dist": "lognormal",
+    "mean": 95,
+    "sigma": 38.0,
+    "min": 10.0
+  },
+  "base_daily_prob": 0.0,
+  "deterministic": true,
+  "schedule": {
+    "type": "every_n_days",
+    "n": 7,
+    "offset": 1
+  },
+  "cooldown_days": 0,
+  "triggers": []
+}

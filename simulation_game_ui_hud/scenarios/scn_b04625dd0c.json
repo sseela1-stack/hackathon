@@ -1,0 +1,26 @@
+{
+  "id": "scn_b04625dd0c",
+  "name": "Streaming Video",
+  "type": "bill",
+  "tags": [
+    "subscriptions",
+    "entertainment",
+    "recurring"
+  ],
+  "description": "Recurring monthly bill: Streaming Video.",
+  "amount": {
+    "dist": "lognormal",
+    "mean": 12,
+    "sigma": 2.4000000000000004,
+    "min": 6.0
+  },
+  "base_daily_prob": 0.0,
+  "deterministic": true,
+  "schedule": {
+    "type": "every_n_days",
+    "n": 30,
+    "offset": 19
+  },
+  "cooldown_days": 0,
+  "triggers": []
+}

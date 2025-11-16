@@ -1,0 +1,19 @@
+{
+  "id": "deferred_payment",
+  "name": "Deferred Payment Due",
+  "type": "bill",
+  "tags": [
+    "fees",
+    "debt"
+  ],
+  "description": "Deferred payment scheduled by player choice.",
+  "amount": {
+    "dist": "fixed",
+    "value": 0.0
+  },
+  "base_daily_prob": 0.0,
+  "deterministic": false,
+  "schedule": null,
+  "cooldown_days": 0,
+  "triggers": []
+}

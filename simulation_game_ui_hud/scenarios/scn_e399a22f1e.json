@@ -1,0 +1,21 @@
+{
+  "id": "scn_e399a22f1e",
+  "name": "Tax Refund",
+  "type": "income",
+  "tags": [
+    "tax",
+    "windfall"
+  ],
+  "description": "Tax Refund received.",
+  "amount": {
+    "dist": "lognormal",
+    "mean": 900,
+    "sigma": 400,
+    "min": 200
+  },
+  "base_daily_prob": 0.001,
+  "deterministic": false,
+  "schedule": null,
+  "cooldown_days": 365,
+  "triggers": []
+}

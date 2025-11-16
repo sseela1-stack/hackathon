@@ -1,0 +1,23 @@
+{
+  "id": "scn_601415de4a",
+  "name": "Credit Card Late Fee",
+  "type": "expense",
+  "tags": [
+    "fees",
+    "debt"
+  ],
+  "description": "Credit Card Late Fee unexpected expense.",
+  "amount": {
+    "dist": "choice",
+    "options": [
+      25,
+      35,
+      40
+    ]
+  },
+  "base_daily_prob": 0.004,
+  "deterministic": false,
+  "schedule": null,
+  "cooldown_days": 30,
+  "triggers": []
+}

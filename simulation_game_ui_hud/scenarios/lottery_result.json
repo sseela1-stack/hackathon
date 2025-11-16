@@ -1,0 +1,21 @@
+{
+  "id": "lottery_result",
+  "name": "Lottery Result",
+  "type": "income",
+  "tags": [
+    "gambling",
+    "windfall"
+  ],
+  "description": "Lottery outcome (usually $0; small chance of win).",
+  "amount": {
+    "dist": "choice",
+    "options": [
+      0
+    ]
+  },
+  "base_daily_prob": 0.0,
+  "deterministic": false,
+  "schedule": null,
+  "cooldown_days": 0,
+  "triggers": []
+}

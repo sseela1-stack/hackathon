@@ -1,0 +1,20 @@
+{
+  "id": "scn_aba2140dac",
+  "name": "Security Deposit",
+  "type": "expense",
+  "tags": [
+    "housing"
+  ],
+  "description": "Security Deposit.",
+  "amount": {
+    "dist": "lognormal",
+    "mean": 1200,
+    "sigma": 500,
+    "min": 500
+  },
+  "base_daily_prob": 0.001,
+  "deterministic": false,
+  "schedule": null,
+  "cooldown_days": 365,
+  "triggers": []
+}

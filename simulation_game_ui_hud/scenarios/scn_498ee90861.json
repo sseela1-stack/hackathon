@@ -1,0 +1,21 @@
+{
+  "id": "scn_498ee90861",
+  "name": "Home Repair",
+  "type": "expense",
+  "tags": [
+    "home_improvement",
+    "emergency"
+  ],
+  "description": "Home Repair unexpected expense.",
+  "amount": {
+    "dist": "lognormal",
+    "mean": 600,
+    "sigma": 400,
+    "min": 150
+  },
+  "base_daily_prob": 0.004,
+  "deterministic": false,
+  "schedule": null,
+  "cooldown_days": 60,
+  "triggers": []
+}

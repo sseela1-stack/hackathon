@@ -1,0 +1,23 @@
+{
+  "id": "scn_5b2b29934e",
+  "name": "Charity Donation",
+  "type": "donation",
+  "tags": [
+    "donation"
+  ],
+  "description": "Charity Donation discretionary outflow.",
+  "amount": {
+    "dist": "choice",
+    "options": [
+      10,
+      25,
+      50,
+      100
+    ]
+  },
+  "base_daily_prob": 0.02,
+  "deterministic": false,
+  "schedule": null,
+  "cooldown_days": 7,
+  "triggers": []
+}

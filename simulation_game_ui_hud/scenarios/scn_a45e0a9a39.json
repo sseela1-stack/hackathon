@@ -1,0 +1,25 @@
+{
+  "id": "scn_a45e0a9a39",
+  "name": "Productivity Software",
+  "type": "bill",
+  "tags": [
+    "subscriptions",
+    "recurring"
+  ],
+  "description": "Recurring monthly bill: Productivity Software.",
+  "amount": {
+    "dist": "lognormal",
+    "mean": 12,
+    "sigma": 2.4000000000000004,
+    "min": 6.0
+  },
+  "base_daily_prob": 0.0,
+  "deterministic": true,
+  "schedule": {
+    "type": "every_n_days",
+    "n": 30,
+    "offset": 16
+  },
+  "cooldown_days": 0,
+  "triggers": []
+}

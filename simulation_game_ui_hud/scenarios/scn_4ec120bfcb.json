@@ -1,0 +1,23 @@
+{
+  "id": "scn_4ec120bfcb",
+  "name": "Speeding Ticket",
+  "type": "expense",
+  "tags": [
+    "fines",
+    "fees"
+  ],
+  "description": "Speeding Ticket unexpected expense.",
+  "amount": {
+    "dist": "choice",
+    "options": [
+      120,
+      180,
+      240
+    ]
+  },
+  "base_daily_prob": 0.004,
+  "deterministic": false,
+  "schedule": null,
+  "cooldown_days": 60,
+  "triggers": []
+}

@@ -1,0 +1,20 @@
+{
+  "id": "scn_cf9871b04e",
+  "name": "Stock Purchase",
+  "type": "expense",
+  "tags": [
+    "investment"
+  ],
+  "description": "Stock Purchase discretionary outflow.",
+  "amount": {
+    "dist": "lognormal",
+    "mean": 250,
+    "sigma": 150,
+    "min": 50
+  },
+  "base_daily_prob": 0.02,
+  "deterministic": false,
+  "schedule": null,
+  "cooldown_days": 3,
+  "triggers": []
+}

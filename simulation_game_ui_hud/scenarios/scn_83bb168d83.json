@@ -1,0 +1,21 @@
+{
+  "id": "scn_83bb168d83",
+  "name": "Paycheck",
+  "type": "income",
+  "tags": [
+    "salary",
+    "recurring"
+  ],
+  "description": "Regular salary paycheck determined by user's pay cycle.",
+  "amount": {
+    "dist": "fixed",
+    "value": 2000
+  },
+  "base_daily_prob": 0.0,
+  "deterministic": true,
+  "schedule": {
+    "type": "pay_cycle"
+  },
+  "cooldown_days": 0,
+  "triggers": []
+}

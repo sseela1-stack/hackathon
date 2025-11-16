@@ -1,0 +1,26 @@
+{
+  "id": "scn_7cf10aa1c1",
+  "name": "Student Loan Payment",
+  "type": "bill",
+  "tags": [
+    "debt",
+    "student_loan",
+    "recurring"
+  ],
+  "description": "Recurring monthly bill: Student Loan Payment.",
+  "amount": {
+    "dist": "lognormal",
+    "mean": 220,
+    "sigma": 44.0,
+    "min": 110.0
+  },
+  "base_daily_prob": 0.0,
+  "deterministic": true,
+  "schedule": {
+    "type": "every_n_days",
+    "n": 30,
+    "offset": 23
+  },
+  "cooldown_days": 0,
+  "triggers": []
+}

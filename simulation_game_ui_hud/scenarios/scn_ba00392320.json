@@ -1,0 +1,20 @@
+{
+  "id": "scn_ba00392320",
+  "name": "Return Item for Refund",
+  "type": "income",
+  "tags": [
+    "refund"
+  ],
+  "description": "Return Item for Refund.",
+  "amount": {
+    "dist": "lognormal",
+    "mean": 60,
+    "sigma": 40,
+    "min": 10
+  },
+  "base_daily_prob": 0.01,
+  "deterministic": false,
+  "schedule": null,
+  "cooldown_days": 30,
+  "triggers": []
+}

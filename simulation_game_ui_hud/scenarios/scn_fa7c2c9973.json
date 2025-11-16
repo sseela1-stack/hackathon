@@ -1,0 +1,25 @@
+{
+  "id": "scn_fa7c2c9973",
+  "name": "News Subscription",
+  "type": "bill",
+  "tags": [
+    "subscriptions",
+    "recurring"
+  ],
+  "description": "Recurring monthly bill: News Subscription.",
+  "amount": {
+    "dist": "lognormal",
+    "mean": 9,
+    "sigma": 1.8,
+    "min": 5.0
+  },
+  "base_daily_prob": 0.0,
+  "deterministic": true,
+  "schedule": {
+    "type": "every_n_days",
+    "n": 30,
+    "offset": 18
+  },
+  "cooldown_days": 0,
+  "triggers": []
+}

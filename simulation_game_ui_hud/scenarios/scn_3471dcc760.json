@@ -1,0 +1,26 @@
+{
+  "id": "scn_3471dcc760",
+  "name": "Music Streaming",
+  "type": "bill",
+  "tags": [
+    "subscriptions",
+    "entertainment",
+    "recurring"
+  ],
+  "description": "Recurring monthly bill: Music Streaming.",
+  "amount": {
+    "dist": "lognormal",
+    "mean": 10,
+    "sigma": 2.0,
+    "min": 5.0
+  },
+  "base_daily_prob": 0.0,
+  "deterministic": true,
+  "schedule": {
+    "type": "every_n_days",
+    "n": 30,
+    "offset": 20
+  },
+  "cooldown_days": 0,
+  "triggers": []
+}

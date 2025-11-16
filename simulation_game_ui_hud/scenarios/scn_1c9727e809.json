@@ -1,0 +1,23 @@
+{
+  "id": "scn_1c9727e809",
+  "name": "Crowdfunding Support",
+  "type": "donation",
+  "tags": [
+    "donation",
+    "social"
+  ],
+  "description": "Crowdfunding Support discretionary outflow.",
+  "amount": {
+    "dist": "choice",
+    "options": [
+      10,
+      20,
+      50
+    ]
+  },
+  "base_daily_prob": 0.015,
+  "deterministic": false,
+  "schedule": null,
+  "cooldown_days": 7,
+  "triggers": []
+}

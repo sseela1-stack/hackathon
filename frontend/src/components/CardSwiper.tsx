@@ -109,10 +109,6 @@ export const CardSwiper: React.FC<CardSwiperProps> = ({ cards, onCardChange, act
     isVerticalScroll.current = false;
   };
 
-  const goToCard = (index: number) => {
-    updateIndex(index);
-  };
-
   // Calculate transform based on current index and drag offset
   const getTransform = () => {
     const baseOffset = -currentIndex * 100;
@@ -141,17 +137,6 @@ export const CardSwiper: React.FC<CardSwiperProps> = ({ cards, onCardChange, act
         ))}
       </div>
 
-      {/* Card indicators */}
-      <div className={styles.indicators}>
-        {cards.map((_, index) => (
-          <button
-            key={index}
-            className={`${styles.indicator} ${index === currentIndex ? styles.indicatorActive : ''}`}
-            onClick={() => goToCard(index)}
-            aria-label={`Go to card ${index + 1}`}
-          />
-        ))}
-      </div>
     </div>
   );
 };

@@ -1,0 +1,28 @@
+{
+  "id": "scn_d75db10c6e",
+  "name": "Save for New Laptop",
+  "type": "saving_pledge",
+  "tags": [
+    "savings",
+    "electronics"
+  ],
+  "description": "Save $1,000 for a laptop in 90 days.",
+  "amount": {
+    "dist": "fixed",
+    "value": 1000
+  },
+  "base_daily_prob": 0.009,
+  "deterministic": false,
+  "schedule": null,
+  "cooldown_days": 45,
+  "triggers": [
+    {
+      "spawn": "saving_contribution",
+      "after_days": 1,
+      "prob": 1.0,
+      "data": {
+        "frequency": "weekly"
+      }
+    }
+  ]
+}

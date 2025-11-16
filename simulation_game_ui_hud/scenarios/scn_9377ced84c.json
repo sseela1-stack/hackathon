@@ -1,0 +1,20 @@
+{
+  "id": "scn_9377ced84c",
+  "name": "Extra Credit Card Payment",
+  "type": "expense",
+  "tags": [
+    "debt"
+  ],
+  "description": "Extra Credit Card Payment discretionary outflow.",
+  "amount": {
+    "dist": "lognormal",
+    "mean": 120,
+    "sigma": 70,
+    "min": 25
+  },
+  "base_daily_prob": 0.02,
+  "deterministic": false,
+  "schedule": null,
+  "cooldown_days": 5,
+  "triggers": []
+}

@@ -1,0 +1,20 @@
+{
+  "id": "scn_35f8d2f776",
+  "name": "Ride-share Trip",
+  "type": "expense",
+  "tags": [
+    "transport",
+    "convenience"
+  ],
+  "description": "Ride-share Trip discretionary spend.",
+  "amount": {
+    "dist": "uniform",
+    "low": 8,
+    "high": 35
+  },
+  "base_daily_prob": 0.1,
+  "deterministic": false,
+  "schedule": null,
+  "cooldown_days": 0,
+  "triggers": []
+}

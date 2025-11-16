@@ -1,0 +1,29 @@
+{
+  "id": "scn_7a30793aa4",
+  "name": "Holiday Gifts Pledge",
+  "type": "saving_pledge",
+  "tags": [
+    "savings",
+    "holiday",
+    "gift"
+  ],
+  "description": "Save $800 for holiday gifts in 90 days.",
+  "amount": {
+    "dist": "fixed",
+    "value": 800
+  },
+  "base_daily_prob": 0.006,
+  "deterministic": false,
+  "schedule": null,
+  "cooldown_days": 45,
+  "triggers": [
+    {
+      "spawn": "saving_contribution",
+      "after_days": 1,
+      "prob": 1.0,
+      "data": {
+        "frequency": "weekly"
+      }
+    }
+  ]
+}

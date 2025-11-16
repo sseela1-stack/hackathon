@@ -1,0 +1,23 @@
+{
+  "id": "scn_f8cf9ae42d",
+  "name": "Parking Ticket",
+  "type": "expense",
+  "tags": [
+    "fines",
+    "fees"
+  ],
+  "description": "Parking Ticket unexpected expense.",
+  "amount": {
+    "dist": "choice",
+    "options": [
+      45,
+      65,
+      90
+    ]
+  },
+  "base_daily_prob": 0.01,
+  "deterministic": false,
+  "schedule": null,
+  "cooldown_days": 30,
+  "triggers": []
+}

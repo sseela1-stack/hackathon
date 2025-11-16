@@ -1,0 +1,22 @@
+{
+  "id": "scn_c4d373867d",
+  "name": "Exam Fee",
+  "type": "expense",
+  "tags": [
+    "education"
+  ],
+  "description": "Exam Fee academic cost.",
+  "amount": {
+    "dist": "choice",
+    "options": [
+      60,
+      100,
+      200
+    ]
+  },
+  "base_daily_prob": 0.008,
+  "deterministic": false,
+  "schedule": null,
+  "cooldown_days": 90,
+  "triggers": []
+}

@@ -1,0 +1,23 @@
+{
+  "id": "scn_66c816302a",
+  "name": "Join a Club / Association",
+  "type": "expense",
+  "tags": [
+    "subscriptions",
+    "social"
+  ],
+  "description": "Join a Club / Association.",
+  "amount": {
+    "dist": "choice",
+    "options": [
+      10,
+      20,
+      50
+    ]
+  },
+  "base_daily_prob": 0.005,
+  "deterministic": false,
+  "schedule": null,
+  "cooldown_days": 180,
+  "triggers": []
+}

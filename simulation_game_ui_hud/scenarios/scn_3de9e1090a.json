@@ -1,0 +1,22 @@
+{
+  "id": "scn_3de9e1090a",
+  "name": "Dental Cleaning Copay",
+  "type": "expense",
+  "tags": [
+    "healthcare"
+  ],
+  "description": "Dental Cleaning Copay health/wellness expense.",
+  "amount": {
+    "dist": "choice",
+    "options": [
+      20,
+      40,
+      60
+    ]
+  },
+  "base_daily_prob": 0.01,
+  "deterministic": false,
+  "schedule": null,
+  "cooldown_days": 180,
+  "triggers": []
+}

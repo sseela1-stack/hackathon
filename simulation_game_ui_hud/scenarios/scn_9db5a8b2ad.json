@@ -1,0 +1,26 @@
+{
+  "id": "scn_9db5a8b2ad",
+  "name": "Internet Plan",
+  "type": "bill",
+  "tags": [
+    "internet",
+    "utilities",
+    "recurring"
+  ],
+  "description": "Recurring monthly bill: Internet Plan.",
+  "amount": {
+    "dist": "lognormal",
+    "mean": 60,
+    "sigma": 12.0,
+    "min": 30.0
+  },
+  "base_daily_prob": 0.0,
+  "deterministic": true,
+  "schedule": {
+    "type": "every_n_days",
+    "n": 30,
+    "offset": 6
+  },
+  "cooldown_days": 0,
+  "triggers": []
+}

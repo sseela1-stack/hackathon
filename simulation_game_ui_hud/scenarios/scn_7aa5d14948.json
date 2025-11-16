@@ -1,0 +1,23 @@
+{
+  "id": "scn_7aa5d14948",
+  "name": "Cash Gift from Family",
+  "type": "income",
+  "tags": [
+    "windfall"
+  ],
+  "description": "Cash Gift from Family received.",
+  "amount": {
+    "dist": "choice",
+    "options": [
+      20,
+      50,
+      100,
+      200
+    ]
+  },
+  "base_daily_prob": 0.008,
+  "deterministic": false,
+  "schedule": null,
+  "cooldown_days": 30,
+  "triggers": []
+}

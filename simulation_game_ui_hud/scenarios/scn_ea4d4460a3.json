@@ -1,0 +1,25 @@
+{
+  "id": "scn_ea4d4460a3",
+  "name": "Cloud Storage 2TB",
+  "type": "bill",
+  "tags": [
+    "subscriptions",
+    "recurring"
+  ],
+  "description": "Recurring monthly bill: Cloud Storage 2TB.",
+  "amount": {
+    "dist": "lognormal",
+    "mean": 10,
+    "sigma": 2.0,
+    "min": 5.0
+  },
+  "base_daily_prob": 0.0,
+  "deterministic": true,
+  "schedule": {
+    "type": "every_n_days",
+    "n": 30,
+    "offset": 15
+  },
+  "cooldown_days": 0,
+  "triggers": []
+}

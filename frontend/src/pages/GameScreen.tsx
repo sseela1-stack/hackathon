@@ -51,6 +51,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ onInvestingUnlocked, profileDat
   const [showChat, setShowChat] = useState<boolean>(false);
   const [mentorStatus, setMentorStatus] = useState<'ready' | 'offline'>('ready');
   const [activeCard, setActiveCard] = useState<number>(0);
+  const [scenarioCardIndex, setScenarioCardIndex] = useState<number>(0);
 
   // Prefetch InvestingDistrict when health >= 55 (unlock threshold)
   const shouldPrefetch = gameState?.health ? gameState.health >= 55 : false;
@@ -109,6 +110,13 @@ const GameScreen: React.FC<GameScreenProps> = ({ onInvestingUnlocked, profileDat
       setIsLoading(false);
     }
   };
+
+  // Reset scenario card deck whenever a new scenario arrives
+  useEffect(() => {
+    if (gameState?.lastScenario?.id) {
+      setScenarioCardIndex(0);
+    }
+  }, [gameState?.lastScenario?.id]);
 
   const loadMentorMessage = async () => {
     try {
@@ -318,31 +326,47 @@ const GameScreen: React.FC<GameScreenProps> = ({ onInvestingUnlocked, profileDat
     { label: 'Mentor', icon: '🧙' },
   ];
 
-  // Prepare cards for swiper
-  const cards = [
-    // Card 1: Main Game - Scenario & Choices
-    <div className={css.cardContent} key="main">
-      <header className={css.cardHeader}>
-        <h1 className={css.cardTitle}>💰 Scenario</h1>
-      </header>
+  const hasCrisisCard = Boolean(gameState.uiHints?.showCrisisCoach && gameState.uiHints.crisisType);
 
-      <div className={css.scenarioContent}>
-        <div className={css.scenarioScrollArea}>
-          <div className={css.eventCard}>
-            <h2 className={css.eventTitle}>{gameState.lastScenario.title}</h2>
-            <p className={css.eventDescription}>{gameState.lastScenario.description}</p>
-            {gameState.lastScenario.amount > 0 && (
-              <p className={css.eventAmount}>${gameState.lastScenario.amount}</p>
-            )}
-          </div>
-
-          {gameState.uiHints?.showCrisisCoach && gameState.uiHints.crisisType && (
-            <CrisisBanner
-              crisisType={gameState.uiHints.crisisType}
-              onDismiss={handleDismissCrisis}
-            />
+  const scenarioDeckCards = [
+    {
+      id: 'story',
+      label: 'Story',
+      content: (
+        <div className={css.storyCardContent}>
+          <p className={css.scenarioCardEyebrow}>Your setup</p>
+          <h2 className={css.eventTitle}>{gameState.lastScenario.title}</h2>
+          <p className={css.eventDescription}>{gameState.lastScenario.description}</p>
+          {gameState.lastScenario.amount > 0 && (
+            <div className={css.scenarioAmountHighlight}>
+              Amount in play: <strong>${gameState.lastScenario.amount}</strong>
+            </div>
           )}
-
+        </div>
+      ),
+    },
+    ...(hasCrisisCard
+      ? [{
+          id: 'coach',
+          label: 'Coach Tip',
+          content: (
+            <div className={css.scenarioCoachCard}>
+              <p className={css.scenarioCardEyebrow}>Heads up</p>
+              {gameState.uiHints?.crisisType && (
+                <CrisisBanner
+                  crisisType={gameState.uiHints.crisisType}
+                  onDismiss={handleDismissCrisis}
+                />
+              )}
+            </div>
+          ),
+        }]
+      : []),
+    {
+      id: 'decision',
+      label: 'Decision',
+      content: (
+        <div className={css.scenarioDecisionCard}>
           {gameState.lastScenario.choices && gameState.lastScenario.choices.length > 0 ? (
             <ChoicePanel
               choices={gameState.lastScenario.choices}
@@ -357,6 +381,103 @@ const GameScreen: React.FC<GameScreenProps> = ({ onInvestingUnlocked, profileDat
               </button>
             </div>
           )}
+        </div>
+      ),
+    },
+  ];
+
+  const scenarioDeckIsFirst = scenarioCardIndex === 0;
+  const scenarioDeckIsLast = scenarioCardIndex === scenarioDeckCards.length - 1;
+
+  const goToScenarioCard = (index: number) => {
+    if (index < 0 || index > scenarioDeckCards.length - 1) return;
+    setScenarioCardIndex(index);
+  };
+
+  const handleScenarioDeckNav = (direction: 'prev' | 'next') => {
+    setScenarioCardIndex((prev) => {
+      if (direction === 'prev') {
+        return Math.max(prev - 1, 0);
+      }
+      return Math.min(prev + 1, scenarioDeckCards.length - 1);
+    });
+  };
+
+  // Prepare cards for swiper
+  const cards = [
+    // Card 1: Main Game - Scenario & Choices
+    <div className={css.cardContent} key="main">
+      <header className={css.cardHeader}>
+        <h1 className={css.cardTitle}>💰 Scenario</h1>
+      </header>
+
+      <div className={css.scenarioContent}>
+        <div className={css.scenarioDeck}>
+          <div className={css.scenarioDeckTabs} role="tablist" aria-label="Scenario cards">
+            {scenarioDeckCards.map((card, index) => (
+              <button
+                key={card.id}
+                id={`scenario-tab-${card.id}`}
+                className={`${css.scenarioDeckTab} ${scenarioCardIndex === index ? css.scenarioDeckTabActive : ''}`}
+                type="button"
+                role="tab"
+                aria-selected={scenarioCardIndex === index}
+                aria-controls={`scenario-panel-${card.id}`}
+                onClick={() => goToScenarioCard(index)}
+                disabled={index > scenarioCardIndex}
+                aria-disabled={index > scenarioCardIndex}
+              >
+                <span className={css.scenarioDeckTabNumber}>{index + 1}</span>
+                <span>{card.label}</span>
+              </button>
+            ))}
+          </div>
+
+          <div className={css.scenarioDeckViewport}>
+            <div
+              className={css.scenarioDeckSlider}
+              style={{ transform: `translateX(-${scenarioCardIndex * 100}%)` }}
+            >
+              {scenarioDeckCards.map((card, index) => (
+                <section
+                  key={card.id}
+                  id={`scenario-panel-${card.id}`}
+                  className={css.scenarioStepCard}
+                  role="tabpanel"
+                  aria-labelledby={`scenario-tab-${card.id}`}
+                  aria-hidden={scenarioCardIndex !== index}
+                >
+                  <div className={css.scenarioStepMeta}>
+                    <span className={css.scenarioStepNumber}>Card {index + 1}</span>
+                    <h3 className={css.scenarioStepTitle}>{card.label}</h3>
+                  </div>
+                  {card.content}
+                </section>
+              ))}
+            </div>
+          </div>
+
+          <div className={css.scenarioDeckControls}>
+            <button
+              type="button"
+              className={css.scenarioDeckButton}
+              onClick={() => handleScenarioDeckNav('prev')}
+              disabled={scenarioDeckIsFirst}
+            >
+              ← Back
+            </button>
+            <div className={css.scenarioDeckProgress}>
+              {scenarioDeckIsLast ? 'Make your choice on this card' : `Card ${scenarioCardIndex + 1} of ${scenarioDeckCards.length}`}
+            </div>
+            <button
+              type="button"
+              className={`${css.scenarioDeckButton} ${scenarioDeckIsLast ? css.scenarioDeckButtonDisabled : ''}`}
+              onClick={() => handleScenarioDeckNav('next')}
+              disabled={scenarioDeckIsLast}
+            >
+              {scenarioDeckIsLast ? 'Ready' : 'Next →'}
+            </button>
+          </div>
         </div>
       </div>
     </div>,

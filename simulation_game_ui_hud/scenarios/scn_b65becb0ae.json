@@ -1,0 +1,20 @@
+{
+  "id": "scn_b65becb0ae",
+  "name": "Side Gig Payout",
+  "type": "income",
+  "tags": [
+    "gig_income"
+  ],
+  "description": "Side Gig Payout received.",
+  "amount": {
+    "dist": "lognormal",
+    "mean": 120,
+    "sigma": 80,
+    "min": 40
+  },
+  "base_daily_prob": 0.05,
+  "deterministic": false,
+  "schedule": null,
+  "cooldown_days": 0,
+  "triggers": []
+}

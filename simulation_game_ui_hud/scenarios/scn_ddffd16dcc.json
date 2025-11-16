@@ -1,0 +1,20 @@
+{
+  "id": "scn_ddffd16dcc",
+  "name": "Marketplace Sale",
+  "type": "income",
+  "tags": [
+    "windfall"
+  ],
+  "description": "Marketplace Sale received.",
+  "amount": {
+    "dist": "lognormal",
+    "mean": 85,
+    "sigma": 50,
+    "min": 20
+  },
+  "base_daily_prob": 0.02,
+  "deterministic": false,
+  "schedule": null,
+  "cooldown_days": 5,
+  "triggers": []
+}

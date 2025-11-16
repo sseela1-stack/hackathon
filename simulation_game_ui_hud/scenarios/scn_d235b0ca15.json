@@ -1,0 +1,22 @@
+{
+  "id": "scn_d235b0ca15",
+  "name": "Concert Ticket",
+  "type": "expense",
+  "tags": [
+    "entertainment",
+    "leisure",
+    "social"
+  ],
+  "description": "Concert Ticket discretionary spend.",
+  "amount": {
+    "dist": "lognormal",
+    "mean": 80,
+    "sigma": 60,
+    "min": 25
+  },
+  "base_daily_prob": 0.01,
+  "deterministic": false,
+  "schedule": null,
+  "cooldown_days": 20,
+  "triggers": []
+}

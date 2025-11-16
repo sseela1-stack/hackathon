@@ -1,0 +1,23 @@
+{
+  "id": "scn_46e19109f0",
+  "name": "Dividend Income",
+  "type": "income",
+  "tags": [
+    "investment_income",
+    "investment"
+  ],
+  "description": "Dividend Income received.",
+  "amount": {
+    "dist": "choice",
+    "options": [
+      10,
+      25,
+      40
+    ]
+  },
+  "base_daily_prob": 0.02,
+  "deterministic": false,
+  "schedule": null,
+  "cooldown_days": 20,
+  "triggers": []
+}

@@ -1,0 +1,20 @@
+{
+  "id": "scn_9920cab542",
+  "name": "Textbook Purchase",
+  "type": "expense",
+  "tags": [
+    "education"
+  ],
+  "description": "Textbook Purchase academic cost.",
+  "amount": {
+    "dist": "lognormal",
+    "mean": 120,
+    "sigma": 60,
+    "min": 40
+  },
+  "base_daily_prob": 0.015,
+  "deterministic": false,
+  "schedule": null,
+  "cooldown_days": 30,
+  "triggers": []
+}

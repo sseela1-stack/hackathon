@@ -1,0 +1,20 @@
+{
+  "id": "scn_94c4f587f7",
+  "name": "Laptop Upgrade",
+  "type": "expense",
+  "tags": [
+    "electronics"
+  ],
+  "description": "Laptop Upgrade large purchase.",
+  "amount": {
+    "dist": "lognormal",
+    "mean": 1200,
+    "sigma": 400,
+    "min": 500
+  },
+  "base_daily_prob": 0.002,
+  "deterministic": false,
+  "schedule": null,
+  "cooldown_days": 365,
+  "triggers": []
+}
