@@ -253,3 +253,89 @@
     font-size: 14px;
   }
 }
+
+/* S23 Ultra & Similar Devices (411px width) */
+@media (max-width: 430px) {
+  .container {
+    width: 98%;
+    max-height: 85vh; /* Reduced from 92vh to prevent overflow */
+    border-radius: 8px;
+  }
+
+  .header {
+    padding: 16px;
+  }
+
+  .title {
+    font-size: 20px;
+  }
+
+  .closeButton {
+    width: 32px;
+    height: 32px;
+    font-size: 20px;
+  }
+
+  .section {
+    padding: 16px;
+  }
+
+  .sectionTitle {
+    font-size: 18px;
+    margin-bottom: 12px;
+  }
+
+  .sectionIcon {
+    font-size: 20px;
+  }
+
+  .patternItem,
+  .tipItem {
+    padding: 12px;
+    gap: 10px;
+  }
+
+  .patternIcon,
+  .tipIcon {
+    font-size: 18px;
+  }
+
+  .patternText,
+  .tipText {
+    font-size: 13px;
+    line-height: 1.4;
+  }
+
+  .statsGrid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  .statCard {
+    padding: 16px;
+  }
+
+  .statIcon {
+    font-size: 28px;
+    margin-bottom: 6px;
+  }
+
+  .statLabel {
+    font-size: 11px;
+    margin-bottom: 6px;
+  }
+
+  .statValue {
+    font-size: 20px;
+  }
+
+  .footer {
+    padding: 16px;
+  }
+
+  .continueButton {
+    padding: 12px 24px;
+    font-size: 15px;
+    width: 100%;
+  }
+}

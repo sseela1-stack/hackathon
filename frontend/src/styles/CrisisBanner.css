@@ -172,6 +172,64 @@
   }
 }
 
+/* S23 Ultra optimization - compact banner */
+@media (max-width: 430px) and (max-height: 800px) {
+  .crisis-banner {
+    padding: 12px 14px;
+    margin-bottom: 10px;
+  }
+
+  .crisis-banner__header {
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+
+  .crisis-banner__icon {
+    font-size: 24px;
+  }
+
+  .crisis-banner__title {
+    font-size: 16px;
+  }
+
+  .crisis-banner__message {
+    font-size: 12px;
+    margin-bottom: 10px;
+    line-height: 1.4;
+  }
+
+  .crisis-banner__steps {
+    padding: 10px;
+    margin-bottom: 10px;
+  }
+
+  .crisis-banner__steps-title {
+    font-size: 12px;
+    margin-bottom: 8px;
+  }
+
+  .crisis-banner__list {
+    gap: 8px;
+  }
+
+  .crisis-banner__step {
+    font-size: 11px;
+    gap: 8px;
+    line-height: 1.4;
+  }
+
+  .crisis-banner__step-number {
+    width: 20px;
+    height: 20px;
+    font-size: 11px;
+  }
+
+  .crisis-banner__dismiss {
+    font-size: 13px;
+    padding: 10px;
+  }
+}
+
 /* Accessibility: Reduced motion */
 @media (prefers-reduced-motion: reduce) {
   .crisis-banner {

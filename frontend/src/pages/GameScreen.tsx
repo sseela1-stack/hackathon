@@ -18,6 +18,7 @@ import { ChatPanel } from '../components/ChatPanel';
 import { getFlow, initializeFlow, complete as completeFlowStep } from '../flow/flowStore';
 import { shouldShowBeacon, detectMilestones, shouldUnlockInvesting } from '../flow/flowEngine';
 import { FlowState } from '../flow/flowTypes';
+import css from './GameScreen.module.css';
 
 interface ToastMessage {
   id: number;
@@ -273,10 +274,10 @@ const GameScreen: React.FC<GameScreenProps> = ({ onInvestingUnlocked, profileDat
 
   if (error) {
     return (
-      <div style={styles.errorContainer}>
-        <h2 style={styles.errorTitle}>⚠️ Error</h2>
-        <p style={styles.errorMessage}>{error}</p>
-        <button style={styles.retryButton} onClick={loadGameState}>
+      <div className={css.errorContainer}>
+        <h2 className={css.errorTitle}>⚠️ Error</h2>
+        <p className={css.errorMessage}>{error}</p>
+        <button className={css.retryButton} onClick={loadGameState}>
           Retry
         </button>
       </div>
@@ -285,7 +286,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ onInvestingUnlocked, profileDat
 
   if (isLoading && !gameState) {
     return (
-      <div style={styles.loadingContainer}>
+      <div className={css.loadingContainer}>
         <h2>Loading FinQuest...</h2>
       </div>
     );
@@ -293,7 +294,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ onInvestingUnlocked, profileDat
 
   if (!gameState || !gameState.lastScenario) {
     return (
-      <div style={styles.loadingContainer}>
+      <div className={css.loadingContainer}>
         <h2>No game data available</h2>
       </div>
     );
@@ -303,9 +304,9 @@ const GameScreen: React.FC<GameScreenProps> = ({ onInvestingUnlocked, profileDat
     <AppShell
       header={<HUDPanel gameState={gameState} />}
       footer={
-        <div style={styles.footerContainer}>
-          <button 
-            style={styles.playbookButton}
+        <div className={css.footerContainer}>
+          <button
+            className={css.playbookButton}
             onClick={handleViewPlaybook}
             aria-label="View Money Playbook"
           >
@@ -315,9 +316,9 @@ const GameScreen: React.FC<GameScreenProps> = ({ onInvestingUnlocked, profileDat
         </div>
       }
     >
-      <div className="game-screen" style={styles.container}>
-        <header style={styles.header}>
-          <h1 style={styles.title}>
+      <div className={`game-screen ${css.container}`}>
+        <header className={css.header}>
+          <h1 className={css.title}>
             💰 FinQuest{profileData?.name ? ` - ${profileData.name}'s Journey` : ''}
           </h1>
         </header>
@@ -328,13 +329,13 @@ const GameScreen: React.FC<GameScreenProps> = ({ onInvestingUnlocked, profileDat
         {/* Quest Tracker for Month 1 */}
         {flow.monthIndex === 0 && <QuestTracker flow={flow} />}
 
-        <div style={styles.mainContent}>
-          <div style={styles.centerPanel}>
-            <div style={styles.eventCard}>
-              <h2 style={styles.eventTitle}>{gameState.lastScenario.title}</h2>
-              <p style={styles.eventDescription}>{gameState.lastScenario.description}</p>
+        <div className={css.mainContent}>
+          <div className={css.centerPanel}>
+            <div className={css.eventCard}>
+              <h2 className={css.eventTitle}>{gameState.lastScenario.title}</h2>
+              <p className={css.eventDescription}>{gameState.lastScenario.description}</p>
               {gameState.lastScenario.amount > 0 && (
-                <p style={styles.eventAmount}>Amount: ${gameState.lastScenario.amount}</p>
+                <p className={css.eventAmount}>Amount: ${gameState.lastScenario.amount}</p>
               )}
             </div>
 
@@ -354,9 +355,9 @@ const GameScreen: React.FC<GameScreenProps> = ({ onInvestingUnlocked, profileDat
                 disabled={isSubmittingChoice}
               />
             ) : (
-              <div style={styles.placeholder}>
+              <div className={css.placeholder}>
                 <p>Choices are being generated...</p>
-                <button onClick={loadGameState} style={styles.retryButton} disabled={isLoading}>
+                <button onClick={loadGameState} className={css.retryButton} disabled={isLoading}>
                   Generate New Scenario
                 </button>
               </div>
@@ -375,16 +376,15 @@ const GameScreen: React.FC<GameScreenProps> = ({ onInvestingUnlocked, profileDat
         />
 
         {/* Toast notifications */}
-        <div style={styles.toastContainer}>
+        <div className={css.toastContainer}>
           {toasts.map((toast) => (
-            <div 
-              key={toast.id} 
-              style={{
-                ...styles.toast,
-                ...(toast.type === 'success' && styles.toastSuccess),
-                ...(toast.type === 'info' && styles.toastInfo),
-                ...(toast.type === 'error' && styles.toastError),
-              }}
+            <div
+              key={toast.id}
+              className={`${css.toast} ${
+                toast.type === 'success' ? css.toastSuccess :
+                toast.type === 'info' ? css.toastInfo :
+                css.toastError
+              }`}
             >
               {toast.message.split('\\n').map((line, i) => (
                 <div key={i}>{line}</div>
@@ -399,7 +399,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ onInvestingUnlocked, profileDat
         {/* Money Playbook Modal */}
         {showPlaybook && playbook && (
           <>
-            <div style={styles.modalOverlay} onClick={handleClosePlaybook} />
+            <div className={css.modalOverlay} onClick={handleClosePlaybook} />
             <MoneyPlaybookView playbook={playbook} onClose={handleClosePlaybook} />
           </>
         )}
@@ -414,166 +414,6 @@ const GameScreen: React.FC<GameScreenProps> = ({ onInvestingUnlocked, profileDat
       </div>
     </AppShell>
   );
-};
-
-const styles: { [key: string]: React.CSSProperties } = {
-  container: {
-    minHeight: '100vh',
-    backgroundColor: '#f0f4f8',
-    padding: '20px',
-  },
-  header: {
-    textAlign: 'center',
-    marginBottom: '30px',
-  },
-  title: {
-    fontSize: '36px',
-    fontWeight: 'bold',
-    color: '#2196F3',
-    margin: 0,
-  },
-  mainContent: {
-    display: 'grid',
-    gridTemplateColumns: '300px 1fr',
-    gap: '20px',
-    maxWidth: '1400px',
-    margin: '0 auto',
-  },
-  leftPanel: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '20px',
-  },
-  centerPanel: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '20px',
-  },
-  eventCard: {
-    backgroundColor: '#fff',
-    padding: '25px',
-    borderRadius: '8px',
-    boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-    borderTop: '4px solid #FF9800',
-  },
-  eventTitle: {
-    fontSize: '24px',
-    fontWeight: 'bold',
-    color: '#333',
-    marginTop: 0,
-    marginBottom: '15px',
-  },
-  eventDescription: {
-    fontSize: '16px',
-    lineHeight: '1.6',
-    color: '#555',
-    margin: 0,
-  },
-  loadingContainer: {
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    minHeight: '100vh',
-    fontSize: '20px',
-    color: '#666',
-  },
-  errorContainer: {
-    display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'center',
-    alignItems: 'center',
-    minHeight: '100vh',
-    padding: '20px',
-  },
-  errorTitle: {
-    fontSize: '32px',
-    color: '#F44336',
-    marginBottom: '10px',
-  },
-  errorMessage: {
-    fontSize: '18px',
-    color: '#666',
-    marginBottom: '20px',
-    textAlign: 'center',
-  },
-  retryButton: {
-    padding: '12px 30px',
-    backgroundColor: '#2196F3',
-    color: 'white',
-    border: 'none',
-    borderRadius: '8px',
-    fontSize: '16px',
-    fontWeight: 'bold',
-    cursor: 'pointer',
-  },
-  placeholder: {
-    backgroundColor: '#fff',
-    padding: '20px',
-    borderRadius: '8px',
-    textAlign: 'center',
-  },
-  eventAmount: {
-    fontSize: '18px',
-    fontWeight: 'bold',
-    color: '#FF9800',
-    marginTop: '12px',
-  },
-  toastContainer: {
-    position: 'fixed',
-    bottom: '80px',
-    right: '20px',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '10px',
-    zIndex: 1000,
-    maxWidth: '400px',
-  },
-  toast: {
-    padding: '16px 20px',
-    borderRadius: '8px',
-    boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-    animation: 'slideIn 0.3s ease-out',
-    color: 'white',
-    fontSize: '14px',
-    lineHeight: '1.5',
-  },
-  toastSuccess: {
-    backgroundColor: '#4CAF50',
-  },
-  toastInfo: {
-    backgroundColor: '#2196F3',
-  },
-  toastError: {
-    backgroundColor: '#F44336',
-  },
-  footerContainer: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    width: '100%',
-    padding: '0 20px',
-  },
-  playbookButton: {
-    padding: '10px 20px',
-    backgroundColor: '#667eea',
-    color: 'white',
-    border: 'none',
-    borderRadius: '8px',
-    fontSize: '14px',
-    fontWeight: '600',
-    cursor: 'pointer',
-    transition: 'all 0.2s ease',
-    boxShadow: '0 2px 8px rgba(102, 126, 234, 0.3)',
-  },
-  modalOverlay: {
-    position: 'fixed',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    zIndex: 999,
-  },
 };
 
 export default GameScreen;

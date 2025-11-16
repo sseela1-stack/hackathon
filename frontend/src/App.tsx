@@ -4,6 +4,7 @@ import SettingsPanel from './components/SettingsPanel';
 import { InstallPrompt } from './components/InstallPrompt';
 import { usePrefetchOnIdle } from './hooks/usePrefetch';
 import { ProfileCreation, Role, Difficulty } from './pages/ProfileCreation';
+import './App.css';
 
 // Lazy load InvestingDistrict for code splitting
 const InvestingDistrict = lazy(() => import('./pages/InvestingDistrict'));
@@ -82,12 +83,12 @@ const App: React.FC = () => {
   return (
     <div className="app">
       <InstallPrompt />
-      
+
       {currentView !== 'settings' && (
-        <nav style={styles.nav}>
+        <nav className="app-nav">
           <button
+            className="app-nav-button"
             style={{
-              ...styles.navButton,
               backgroundColor: currentView === 'game' ? '#2196F3' : '#f0f0f0',
               color: currentView === 'game' ? 'white' : '#333',
             }}
@@ -96,8 +97,8 @@ const App: React.FC = () => {
             🎮 Game
           </button>
           <button
+            className="app-nav-button"
             style={{
-              ...styles.navButton,
               backgroundColor: currentView === 'investing' ? '#4CAF50' : '#f0f0f0',
               color: currentView === 'investing' ? 'white' : '#333',
             }}
@@ -106,7 +107,11 @@ const App: React.FC = () => {
             📈 Investing
           </button>
           <button
-            style={styles.navButton}
+            className="app-nav-button"
+            style={{
+              backgroundColor: '#f0f0f0',
+              color: '#333',
+            }}
             onClick={() => setCurrentView('settings')}
           >
             ⚙️ Settings
@@ -114,37 +119,11 @@ const App: React.FC = () => {
         </nav>
       )}
 
-      <main style={styles.main}>
+      <main className="app-main">
         {renderView()}
       </main>
     </div>
   );
-};
-
-const styles: { [key: string]: React.CSSProperties } = {
-  nav: {
-    display: 'flex',
-    justifyContent: 'center',
-    gap: '10px',
-    padding: '15px',
-    backgroundColor: '#fff',
-    boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-    position: 'sticky',
-    top: 0,
-    zIndex: 1000,
-  },
-  navButton: {
-    padding: '10px 20px',
-    border: 'none',
-    borderRadius: '8px',
-    fontSize: '16px',
-    fontWeight: '500',
-    cursor: 'pointer',
-    transition: 'all 0.2s ease',
-  },
-  main: {
-    minHeight: 'calc(100vh - 70px)',
-  },
 };
 
 export default App;
