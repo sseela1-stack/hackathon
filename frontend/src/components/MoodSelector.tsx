@@ -62,7 +62,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     fontSize: '10px',
     fontWeight: 'bold',
     marginBottom: '4px',
-    color: '#666',
+    color: 'white',
     textAlign: 'center',
   },
   moodsContainer: {

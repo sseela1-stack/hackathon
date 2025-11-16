@@ -527,9 +527,9 @@
 
 .chatButton {
   padding: 6px 10px;
-  background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
-  color: white;
-  border: none;
+  background: white;
+  color: #667eea;
+  border: 1px solid #e0e0e0;
   border-radius: 6px;
   font-size: 11px;
   font-weight: 600;
@@ -546,7 +546,9 @@
 }
 
 .chatButtonOffline {
-  background: linear-gradient(135deg, #d84315 0%, #f57c00 100%);
+  background: white;
+  color: #d84315;
+  border: 1px solid #e0e0e0;
 }
 
 .chatStatus {
@@ -558,9 +560,9 @@
 
 .playbookButton {
   padding: 6px 10px;
-  background-color: #667eea;
-  color: white;
-  border: none;
+  background-color: white;
+  color: #667eea;
+  border: 1px solid #e0e0e0;
   border-radius: 6px;
   font-size: 11px;
   font-weight: 600;
@@ -572,7 +574,7 @@
 }
 
 .playbookButton:hover {
-  background-color: #5568d3;
+  background-color: #f5f5f5;
   transform: translateY(-1px);
 }
 
