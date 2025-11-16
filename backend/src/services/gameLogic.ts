@@ -523,9 +523,10 @@ export function generateScenario(state: GameState): Scenario {
   const scenarioType = rng.pick(weightedTypes);
   const template = SCENARIO_TEMPLATES[scenarioType];
   
-  // Generate scenario details
-  const title = rng.pick(template.titles);
-  const description = rng.pick(template.descriptions);
+  // Generate scenario details - pick same index for title and description
+  const titleDescIdx = rng.nextInt(0, template.titles.length);
+  const title = template.titles[titleDescIdx];
+  const description = template.descriptions[titleDescIdx];
   const [minAmount, maxAmount] = template.amountRange;
   const amount = rng.nextInt(minAmount, maxAmount + 1);
   
