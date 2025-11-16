@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { GameState, Mood, MoneyPlaybook } from '../types/game';
-import { getGameState, postChoice, clearUiHints, updateMood, getPlaybook, postChatMessage } from '../api/gameApi';
+import { getGameState, postChoice, updateMood, getPlaybook, postChatMessage } from '../api/gameApi';
 import { getMentorMessage } from '../api/agentApi';
 import HUDPanel from '../components/HUDPanel';
 import DialoguePanel from '../components/DialoguePanel';
 import MoodSelector from '../components/MoodSelector';
 import ChoicePanel from '../components/ChoicePanel';
-import CrisisBanner from '../components/CrisisBanner';
 import MoneyPlaybookView from '../components/MoneyPlaybookView';
 import { AchievementToast } from '../components/Achievements';
 import { AppShell } from '../components/layout/AppShell';
@@ -127,7 +126,6 @@ const GameScreen: React.FC<GameScreenProps> = ({ onInvestingUnlocked, profileDat
       console.error('Failed to load mentor message:', err);
       setMentorStatus('offline');
       setAgentMessage('I\'m syncing with your latest choices. Open Mentor Chat for live help.');
-      showToast('Mentor chat is reconnecting. Tap Mentor Chat for live help.', 'info');
     }
   };
 
@@ -238,25 +236,6 @@ const GameScreen: React.FC<GameScreenProps> = ({ onInvestingUnlocked, profileDat
     }
   };
 
-  const handleDismissCrisis = async () => {
-    try {
-      const updatedState = await clearUiHints();
-      setGameState(updatedState);
-    } catch (err: any) {
-      console.error('Failed to dismiss crisis banner:', err);
-      // Optimistically hide it anyway
-      if (gameState) {
-        setGameState({
-          ...gameState,
-          uiHints: {
-            showCrisisCoach: false,
-            crisisType: undefined,
-          },
-        });
-      }
-    }
-  };
-
   const handleViewPlaybook = async () => {
     try {
       const playbookData = await getPlaybook();
@@ -326,8 +305,6 @@ const GameScreen: React.FC<GameScreenProps> = ({ onInvestingUnlocked, profileDat
     { label: 'Mentor', icon: '🧙' },
   ];
 
-  const hasCrisisCard = Boolean(gameState.uiHints?.showCrisisCoach && gameState.uiHints.crisisType);
-
   const scenarioDeckCards = [
     {
       id: 'story',
@@ -345,23 +322,6 @@ const GameScreen: React.FC<GameScreenProps> = ({ onInvestingUnlocked, profileDat
         </div>
       ),
     },
-    ...(hasCrisisCard
-      ? [{
-          id: 'coach',
-          label: 'Coach Tip',
-          content: (
-            <div className={css.scenarioCoachCard}>
-              <p className={css.scenarioCardEyebrow}>Heads up</p>
-              {gameState.uiHints?.crisisType && (
-                <CrisisBanner
-                  crisisType={gameState.uiHints.crisisType}
-                  onDismiss={handleDismissCrisis}
-                />
-              )}
-            </div>
-          ),
-        }]
-      : []),
     {
       id: 'decision',
       label: 'Decision',
