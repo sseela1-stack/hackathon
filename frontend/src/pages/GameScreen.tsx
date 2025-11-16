@@ -127,7 +127,6 @@ const GameScreen: React.FC<GameScreenProps> = ({ onInvestingUnlocked, profileDat
       console.error('Failed to load mentor message:', err);
       setMentorStatus('offline');
       setAgentMessage('I\'m syncing with your latest choices. Open Mentor Chat for live help.');
-      showToast('Mentor chat is reconnecting. Tap Mentor Chat for live help.', 'info');
     }
   };
 
