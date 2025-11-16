@@ -35,7 +35,7 @@ function showUpdateBanner(updateSW: () => Promise<void>): void {
   banner.id = 'pwa-update-banner';
   banner.style.cssText = `
     position: fixed;
-    bottom: 20px;
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 20px);
     left: 50%;
     transform: translateX(-50%);
     background: #0B132B;
@@ -50,6 +50,8 @@ function showUpdateBanner(updateSW: () => Promise<void>): void {
     font-family: system-ui, -apple-system, sans-serif;
     font-size: 14px;
     animation: slideUp 0.3s ease-out;
+    max-width: calc(100vw - 32px);
+    width: 400px;
   `;
 
   const message = document.createElement('span');
@@ -148,7 +150,7 @@ function showOfflineReadyToast(): void {
   toast.id = 'pwa-offline-toast';
   toast.style.cssText = `
     position: fixed;
-    top: 20px;
+    top: calc(env(safe-area-inset-top, 0px) + 20px);
     left: 50%;
     transform: translateX(-50%);
     background: #06D6A0;
@@ -161,6 +163,7 @@ function showOfflineReadyToast(): void {
     font-size: 14px;
     font-weight: 500;
     animation: slideUp 0.3s ease-out;
+    max-width: calc(100vw - 32px);
   `;
   toast.textContent = '✓ Ready to work offline';
 

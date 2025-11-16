@@ -94,7 +94,24 @@ body {
   .button, button { min-height: var(--tap-ios); }
 }
 
-@media (min-width: 430px) { /* S23 Ultra typically 412–480 CSS px depending on DPR/settings */
+/* S23 Ultra optimizations (411px width) */
+@media (min-width: 401px) and (max-width: 430px) {
+  :root {
+    --edge-safe: max(var(--safe-left), var(--safe-right), 10px); /* Extra edge padding */
+  }
+
+  .button, button {
+    min-height: var(--tap); /* Use Android 48dp standard */
+  }
+
+  /* Optimize spacing for 411px width */
+  .container-safe {
+    padding-left: max(var(--safe-left), 16px);
+    padding-right: max(var(--safe-right), 16px);
+  }
+}
+
+@media (min-width: 431px) { /* Larger devices */
   .stack { gap: calc(var(--gap) * 1.1); }
   .button, button { min-height: var(--tap); }
 }
