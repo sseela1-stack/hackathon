@@ -88,7 +88,7 @@ export function ProfileCreation({ onComplete }: ProfileCreationProps) {
             <div className={styles.logo}>💰</div>
             <h1 className={styles.title}>Welcome to FinQuest!</h1>
             <p className={styles.subtitle}>
-              Learn real financial skills through interactive scenarios
+              Master your money, one quest at a time.
             </p>
             
             <div className={styles.nameInput}>
@@ -115,21 +115,6 @@ export function ProfileCreation({ onComplete }: ProfileCreationProps) {
             >
               Get Started →
             </button>
-
-            <div className={styles.features}>
-              <div className={styles.feature}>
-                <span className={styles.featureIcon}>✅</span>
-                <span>Learn by doing</span>
-              </div>
-              <div className={styles.feature}>
-                <span className={styles.featureIcon}>💡</span>
-                <span>AI-powered guidance</span>
-              </div>
-              <div className={styles.feature}>
-                <span className={styles.featureIcon}>🎮</span>
-                <span>Track your progress</span>
-              </div>
-            </div>
           </div>
         )}
 
