@@ -1,30 +1,57 @@
 import React from 'react';
-import { User } from '../types/game';
+import { GameState } from '../types/game';
+import { AchievementCounter } from './Achievements';
 
 interface HUDPanelProps {
-  user: User;
+  gameState: GameState;
 }
 
 /**
- * HUD Panel - Displays financial balances, health score, and current day/month
+ * HUD Panel - Displays financial balances, health score, and current progress
  */
-const HUDPanel: React.FC<HUDPanelProps> = ({ user }) => {
+const HUDPanel: React.FC<HUDPanelProps> = ({ gameState }) => {
+  const checking = gameState.accounts.find(a => a.type === 'checking')?.balance || 0;
+  const savings = gameState.accounts.find(a => a.type === 'savings')?.balance || 0;
+  const investment = gameState.accounts.find(a => a.type === 'investment')?.balance || 0;
+
   return (
     <div className="hud-panel" style={styles.container}>
+      {/* Progression Header */}
+      <div style={styles.progressionHeader}>
+        <div style={styles.monthCounter}>
+          <span style={styles.monthIcon}>📅</span>
+          <span style={styles.monthText}>Month {gameState.monthsPlayed}</span>
+        </div>
+        <div style={styles.unlockStatus}>
+          {gameState.unlocked.investingDistrict ? (
+            <span style={styles.unlocked}>
+              <span style={styles.unlockIcon}>🔓</span>
+              Investing District: Unlocked
+            </span>
+          ) : (
+            <span style={styles.locked}>
+              <span style={styles.unlockIcon}>🔒</span>
+              Investing District: Locked
+            </span>
+          )}
+        </div>
+        <AchievementCounter earned={gameState.achievements} />
+      </div>
+
       <div style={styles.section}>
         <h3 style={styles.heading}>Financial Overview</h3>
         <div style={styles.balances}>
           <div style={styles.balanceItem}>
             <span style={styles.label}>Checking:</span>
-            <span style={styles.value}>${user.checkingBalance.toFixed(2)}</span>
+            <span style={styles.value}>${checking.toFixed(2)}</span>
           </div>
-          <div style={styles.balanceItem}>
+          <div style={styles.balanceItem} id="buffer-100">
             <span style={styles.label}>Savings:</span>
-            <span style={styles.value}>${user.savingsBalance.toFixed(2)}</span>
+            <span style={styles.value}>${savings.toFixed(2)}</span>
           </div>
           <div style={styles.balanceItem}>
             <span style={styles.label}>Investment:</span>
-            <span style={styles.value}>${user.investmentBalance.toFixed(2)}</span>
+            <span style={styles.value}>${investment.toFixed(2)}</span>
           </div>
         </div>
       </div>
@@ -36,25 +63,33 @@ const HUDPanel: React.FC<HUDPanelProps> = ({ user }) => {
             <div 
               style={{
                 ...styles.healthBarFill,
-                width: `${user.healthScore}%`,
-                backgroundColor: getHealthColor(user.healthScore),
+                width: `${gameState.health}%`,
+                backgroundColor: getHealthColor(gameState.health),
               }}
             />
           </div>
-          <span style={styles.healthValue}>{user.healthScore}/100</span>
+          <span style={styles.healthValue}>{gameState.health}/100</span>
         </div>
       </div>
 
       <div style={styles.section}>
-        <h3 style={styles.heading}>Progress</h3>
-        <div style={styles.progress}>
+        <h3 style={styles.heading}>Monthly Fixed Expenses</h3>
+        <div style={styles.progress} id="pay-bills">
           <div style={styles.balanceItem}>
-            <span style={styles.label}>Day:</span>
-            <span style={styles.value}>{user.currentDay}</span>
+            <span style={styles.label}>Rent:</span>
+            <span style={styles.value}>${gameState.fixed.rent}</span>
           </div>
           <div style={styles.balanceItem}>
-            <span style={styles.label}>Month:</span>
-            <span style={styles.value}>{user.currentMonth}</span>
+            <span style={styles.label}>Food:</span>
+            <span style={styles.value}>${gameState.fixed.food}</span>
+          </div>
+          <div style={styles.balanceItem}>
+            <span style={styles.label}>Transport:</span>
+            <span style={styles.value}>${gameState.fixed.transport}</span>
+          </div>
+          <div style={styles.balanceItem}>
+            <span style={styles.label}>Phone/Internet:</span>
+            <span style={styles.value}>${gameState.fixed.phoneInternet}</span>
           </div>
         </div>
       </div>
@@ -74,6 +109,60 @@ const styles: { [key: string]: React.CSSProperties } = {
     padding: '20px',
     borderRadius: '8px',
     boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+  },
+  progressionHeader: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '12px',
+    marginBottom: '20px',
+    padding: '12px',
+    backgroundColor: 'white',
+    borderRadius: '8px',
+    flexWrap: 'wrap',
+  },
+  monthCounter: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '6px',
+    padding: '6px 12px',
+    backgroundColor: '#e3f2fd',
+    borderRadius: '20px',
+    fontWeight: 600,
+    color: '#1976d2',
+  },
+  monthIcon: {
+    fontSize: '18px',
+  },
+  monthText: {
+    fontSize: '14px',
+  },
+  unlockStatus: {
+    flex: 1,
+  },
+  unlocked: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '6px',
+    padding: '6px 12px',
+    backgroundColor: '#e8f5e9',
+    borderRadius: '20px',
+    color: '#2e7d32',
+    fontWeight: 600,
+    fontSize: '13px',
+  },
+  locked: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '6px',
+    padding: '6px 12px',
+    backgroundColor: '#fafafa',
+    borderRadius: '20px',
+    color: '#757575',
+    fontWeight: 600,
+    fontSize: '13px',
+  },
+  unlockIcon: {
+    fontSize: '16px',
   },
   section: {
     marginBottom: '20px',

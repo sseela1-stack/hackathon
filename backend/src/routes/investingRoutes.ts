@@ -1,32 +1,40 @@
 /**
  * Investing Routes
- * Routes for investment simulation and portfolio management
+ * Educational portfolio simulation with DCA, fees, rebalancing, shocks, Monte Carlo
  */
 
 import { Router } from 'express';
-import { getSimulate, postRebalance } from '../controllers/investingController';
+import { postSimulate, postMonteCarlo } from '../controllers/investingController';
 
 const router = Router();
 
 /**
- * GET /api/investing/simulate
- * Simulates a 12-month investment portfolio performance
- * 
- * Query params:
- * - profile: conservative | balanced | aggressive (default: balanced)
- * - start: number (starting value, default: 1000)
- * - market: bull | bear | sideways (default: sideways)
- */
-router.get('/simulate', getSimulate);
-
-/**
- * POST /api/investing/rebalance
- * Analyzes portfolio and provides rebalancing recommendations
+ * POST /api/investing/simulate
+ * Educational portfolio simulation with comprehensive features
  * 
  * Body:
- * - path: number[] - historical portfolio values
- * - targetMix: { stocks, bonds, cash } - desired allocation (percentages must sum to 1.0)
+ * - profile: 'conservative' | 'balanced' | 'aggressive'
+ * - startValue: number
+ * - years: number (1-40)
+ * - seed?: string
+ * - contribMonthly?: number
+ * - feesBps?: number (0-100, default 10)
+ * - rebalance?: 'none' | 'annual' | 'threshold'
+ * - thresholdPct?: number (default 0.05)
+ * - shocks?: { crashAtMonth?, crashPct?, inflationDriftCutBps?, pauseContribFrom?, pauseContribTo? }
+ * - sequencePreset?: 'normal' | 'badFirstYears' | 'goodFirstYears'
+ * - glidePath?: { startMix, endMix }
  */
-router.post('/rebalance', postRebalance);
+router.post('/simulate', postSimulate);
+
+/**
+ * POST /api/investing/montecarlo
+ * Monte Carlo simulation with percentile bands
+ * 
+ * Body: Same as /simulate plus:
+ * - runs: number (10-500)
+ * - targetAmount: number
+ */
+router.post('/montecarlo', postMonteCarlo);
 
 export default router;

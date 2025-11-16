@@ -1,0 +1,144 @@
+/* Flow Beacons Styles */
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+}
+
+.ring {
+  position: fixed;
+  border: 3px solid #ffd700;
+  border-radius: 12px;
+  box-shadow: 0 0 0 4px rgba(255, 215, 0, 0.2), 0 0 20px rgba(255, 215, 0, 0.4);
+  animation: ringPulse 2s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ring {
+    animation: none;
+  }
+}
+
+@keyframes ringPulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.7;
+  }
+}
+
+.tooltip {
+  position: fixed;
+  max-width: 280px;
+  pointer-events: auto;
+  z-index: 10000;
+}
+
+.tooltipContent {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 16px;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  font-size: 14px;
+  line-height: 1.5;
+  animation: fadeInScale 0.3s ease-out;
+}
+
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.dismissButton {
+  display: block;
+  width: 100%;
+  margin-top: 12px;
+  padding: 10px;
+  background: white;
+  color: #667eea;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-height: 44px;
+}
+
+.dismissButton:hover {
+  background: rgba(255, 255, 255, 0.9);
+  transform: translateY(-1px);
+}
+
+.dismissButton:active {
+  transform: translateY(0);
+}
+
+.dismissButton:focus-visible {
+  outline: 3px solid #ffd700;
+  outline-offset: 2px;
+}
+
+.arrow {
+  position: absolute;
+  width: 0;
+  height: 0;
+  border-style: solid;
+}
+
+.arrow-top {
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 10px 10px 0 10px;
+  border-color: #667eea transparent transparent transparent;
+}
+
+.arrow-bottom {
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 0 10px 10px 10px;
+  border-color: transparent transparent #667eea transparent;
+}
+
+.arrow-left {
+  right: -10px;
+  top: 50%;
+  transform: translateY(-50%);
+  border-width: 10px 0 10px 10px;
+  border-color: transparent transparent transparent #667eea;
+}
+
+.arrow-right {
+  left: -10px;
+  top: 50%;
+  transform: translateY(-50%);
+  border-width: 10px 10px 10px 0;
+  border-color: transparent #667eea transparent transparent;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .tooltip {
+    max-width: calc(100vw - 32px);
+  }
+
+  .tooltipContent {
+    padding: 14px;
+    font-size: 13px;
+  }
+}

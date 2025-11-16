@@ -299,10 +299,21 @@ export function mentorPrompt(context: AgentContext): PromptTemplate {
   const investments = (context as any).investments || 0;
   const debt = (context as any).debt || 0;
 
+  // Adapt tone based on mood
+  let toneGuidance = '';
+  if (mood === 'anxious') {
+    toneGuidance = 'The player is feeling anxious. Be extra reassuring, patient, and break steps down simply. Emphasize small wins.';
+  } else if (mood === 'confident') {
+    toneGuidance = 'The player is feeling confident. Acknowledge their positive momentum but gently caution against overconfidence and impulsive decisions.';
+  } else {
+    toneGuidance = 'The player is feeling okay. Maintain balanced, encouraging tone.';
+  }
+
   return {
     system: `You are Mentor, a calm, friendly money coach. Use simple, non-judgmental language. 
 No stock tips or predictions. Focus on teaching the concept behind the outcome. 
-Keep replies under 120 words. Avoid jargon; if a term appears, define it briefly.`,
+Keep replies under 120 words. Avoid jargon; if a term appears, define it briefly.
+${toneGuidance}`,
     user: `Context:
 - Role: ${role || 'player'}
 - Mood: ${mood || 'neutral'}
@@ -318,10 +329,19 @@ Explain what just happened and one next small step the player can try.`,
  * Acknowledges trade-offs, validates enjoyment
  */
 export function spenderSamPrompt(context: AgentContext): PromptTemplate {
+  let toneAdjustment = '';
+  if (context.mood === 'anxious') {
+    toneAdjustment = 'The player is anxious. Be supportive but don\'t push spending. Acknowledge it\'s okay to say no.';
+  } else if (context.mood === 'confident') {
+    toneAdjustment = 'The player is confident. Celebrate fun but gently remind them that YOLO doesn\'t mean broke tomorrow.';
+  }
+
   return {
     system: `You are Spender Sam. You love fun and instant rewards but acknowledge trade-offs. 
-Keep tone upbeat and short (<100 words). No shaming. No stock tips.`,
+Keep tone upbeat and short (<100 words). No shaming. No stock tips.
+${toneAdjustment}`,
     user: `Context: Player has $${context.currentBalance || '??'} available.
+Mood: ${context.mood || 'neutral'}
 Scenario: ${context.scenarioDescription || 'spending opportunity'}
 
 What do you think about this situation? Should I go for it?`,
@@ -349,10 +369,19 @@ What would you suggest from a savings perspective?`,
  * Step-by-step for tough situations, warns about debt traps
  */
 export function crisisCoachPrompt(context: AgentContext): PromptTemplate {
+  let moodSupport = '';
+  if (context.mood === 'anxious') {
+    moodSupport = 'The player is anxious about this crisis. Be extra calm and reassuring. Break steps into tiny, manageable pieces.';
+  } else if (context.mood === 'confident') {
+    moodSupport = 'The player seems confident. Validate their strength but ensure they take the crisis seriously - no shortcuts.';
+  }
+
   return {
     system: `You are Crisis Coach. Triage first: housing, food, essentials, minimum debt payments. 
-Speak step-by-step, calm and brief (<120 words). No stock tips.`,
+Speak step-by-step, calm and brief (<120 words). No stock tips.
+${moodSupport}`,
     user: `Context: Player is in ${context.difficulty || 'challenging'} mode.
+Mood: ${context.mood || 'neutral'}
 Situation: ${context.scenarioDescription || 'financial pressure'}
 
 I'm facing this challenge. What should I prioritize first?`,

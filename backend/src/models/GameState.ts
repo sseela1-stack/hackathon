@@ -169,11 +169,12 @@ export type GoalType = 'car3y' | 'grad5y' | 'retire30y';
  * Maps to the event generation system
  */
 export type ScenarioType = 
-  | 'bill'              // Unexpected bill (car repair, medical)
+  | 'bill'              // Regular monthly bill
   | 'surpriseExpense'   // One-time expense opportunity
-  | 'jobLoss'           // Income disruption
+  | 'jobLoss'           // CRISIS: Income disruption
+  | 'bigUnexpectedBill' // CRISIS: Major unexpected expense
+  | 'rentHike'          // CRISIS: Fixed cost increase
   | 'marketCrash'       // Investment volatility
-  | 'rentHike'          // Fixed cost increase
   | 'tripInvite';       // Social spending pressure
 
 /**
@@ -195,6 +196,9 @@ export interface Scenario {
   
   /** Optional monetary amount involved */
   amount?: number;
+  
+  /** Available choices for this scenario */
+  choices?: Choice[];
   
   /** Optional metadata for scenario-specific data */
   meta?: Record<string, unknown>;
@@ -292,10 +296,27 @@ export interface GameState {
   /** Current emotional state */
   mood: Mood;
   
+  /** Number of in-game months elapsed (increments after each resolved choice) */
+  monthsPlayed: number;
+  
+  /** Calculated net worth (sum of all accounts minus debt) */
+  netWorth: number;
+  
   /** Feature flags for progressive unlocking */
   unlocked: {
     /** Whether player has access to investing features */
     investingDistrict: boolean;
+  };
+  
+  /** Earned achievements for player progression */
+  achievements: string[];
+  
+  /** UI hints for displaying contextual help */
+  uiHints?: {
+    /** Show Crisis Coach banner with actionable steps */
+    showCrisisCoach?: boolean;
+    /** Crisis type for customized advice */
+    crisisType?: 'jobLoss' | 'bigUnexpectedBill' | 'rentHike';
   };
   
   /** Most recent scenario presented to player */

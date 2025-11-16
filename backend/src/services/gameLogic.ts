@@ -374,7 +374,7 @@ const SCENARIO_TEMPLATES: Record<
       'Your phone bill is due this month.',
       'Internet service bill needs to be paid.',
     ],
-    moodWeight: { anxious: 1.5, okay: 1.0, confident: 0.8 },
+    moodWeight: { anxious: 1.8, okay: 1.0, confident: 0.6 }, // Anxious sees more bills
     amountRange: [50, 150],
   },
   surpriseExpense: {
@@ -390,18 +390,34 @@ const SCENARIO_TEMPLATES: Record<
       'Unexpected dental work required.',
       'Your best friend is getting married next month!',
     ],
-    moodWeight: { anxious: 2.0, okay: 1.0, confident: 0.5 },
+    moodWeight: { anxious: 1.5, okay: 1.0, confident: 0.8 },
     amountRange: [200, 800],
   },
   jobLoss: {
     titles: ['Layoff Notice', 'Contract Ended', 'Company Downsizing'],
     descriptions: [
-      'Your company announced layoffs and you\'re affected.',
-      'Your contract position has ended unexpectedly.',
-      'The company is restructuring and your department is being cut.',
+      'Your company announced layoffs and you\'re affected. You have 2 weeks of severance.',
+      'Your contract position has ended unexpectedly. Last paycheck this month.',
+      'The company is restructuring and your department is being cut. Severance is minimal.',
     ],
-    moodWeight: { anxious: 3.0, okay: 0.8, confident: 0.3 },
-    amountRange: [-1000, -500], // Income reduction
+    moodWeight: { anxious: 2.5, okay: 0.5, confident: 0.1 }, // Anxious much more likely
+    amountRange: [800, 2000], // Lost monthly income equivalent
+  },
+  bigUnexpectedBill: {
+    titles: [
+      'Major Car Repair Needed',
+      'Emergency Medical Bill',
+      'Apartment Flood Damage',
+      'Laptop Completely Died',
+    ],
+    descriptions: [
+      'Your car\'s transmission failed. Mechanic says it\'s $1,200 to fix or the car won\'t run.',
+      'You had an emergency room visit. After insurance, you still owe this amount.',
+      'A pipe burst in your apartment. You\'re responsible for the damage to your belongings.',
+      'Your work laptop died completely. You need a new one ASAP for your job.',
+    ],
+    moodWeight: { anxious: 2.0, okay: 0.8, confident: 0.3 }, // Anxious more crisis-aware
+    amountRange: [800, 1800], // Major unexpected bill
   },
   marketCrash: {
     titles: [
@@ -414,18 +430,18 @@ const SCENARIO_TEMPLATES: Record<
       'Economic news triggered a market sell-off. Portfolio value decreased.',
       'Market correction underway. Investment values have declined.',
     ],
-    moodWeight: { anxious: 2.5, okay: 1.0, confident: 0.5 },
+    moodWeight: { anxious: 2.5, okay: 1.0, confident: 0.4 }, // Anxious sees more crashes
     amountRange: [-500, -100],
   },
   rentHike: {
     titles: ['Rent Increase Notice', 'Lease Renewal', 'Landlord Letter'],
     descriptions: [
-      'Your landlord is raising rent by 10% next month.',
-      'Lease renewal time and rent is going up.',
-      'Your landlord sent notice of a rent increase.',
+      'Your landlord is raising rent by 15% starting next month. That\'s an extra $150-200/month.',
+      'Lease renewal time and rent is going up significantly due to market rates.',
+      'Your landlord sent notice: rent increases by $180/month. You have 60 days to decide.',
     ],
-    moodWeight: { anxious: 1.8, okay: 1.0, confident: 0.7 },
-    amountRange: [50, 150], // Monthly increase
+    moodWeight: { anxious: 1.5, okay: 0.8, confident: 0.4 }, // Anxious more worried about costs
+    amountRange: [150, 250], // Monthly increase amount
   },
   tripInvite: {
     titles: [
@@ -440,10 +456,47 @@ const SCENARIO_TEMPLATES: Record<
       'A friend invited you on a road trip adventure.',
       'Amazing flight deals to your dream destination!',
     ],
-    moodWeight: { anxious: 0.5, okay: 1.0, confident: 2.0 },
+    moodWeight: { anxious: 0.3, okay: 1.0, confident: 2.5 }, // Confident embraces fun
     amountRange: [150, 600],
   },
 };
+
+/**
+ * Get normalized scenario weights based on player mood
+ * Returns a map of scenario type to probability weight
+ * 
+ * @param mood - Player's current mood
+ * @returns Normalized weight map for each scenario type
+ * 
+ * @example
+ * // Anxious mood biases toward bills, crashes, crises
+ * const weights = getScenarioWeights('anxious');
+ * // weights: { bill: 0.15, marketCrash: 0.20, tripInvite: 0.02, ... }
+ * 
+ * // Confident mood biases toward fun spending
+ * const weights = getScenarioWeights('confident');
+ * // weights: { tripInvite: 0.25, bill: 0.08, jobLoss: 0.01, ... }
+ */
+export function getScenarioWeights(mood: Mood): Record<ScenarioType, number> {
+  const scenarioTypes = Object.keys(SCENARIO_TEMPLATES) as ScenarioType[];
+  const rawWeights: Record<string, number> = {};
+  let totalWeight = 0;
+  
+  // Collect raw weights from templates
+  scenarioTypes.forEach((type) => {
+    const weight = SCENARIO_TEMPLATES[type].moodWeight[mood];
+    rawWeights[type] = weight;
+    totalWeight += weight;
+  });
+  
+  // Normalize to probabilities (sum to 1.0)
+  const normalized: Record<string, number> = {};
+  scenarioTypes.forEach((type) => {
+    normalized[type] = rawWeights[type] / totalWeight;
+  });
+  
+  return normalized as Record<ScenarioType, number>;
+}
 
 /**
  * Generate a scenario biased by player's mood
@@ -634,6 +687,135 @@ export function generateChoices(scenario: Scenario, state: GameState): Choice[] 
         },
       ];
       
+    case 'jobLoss':
+      return [
+        {
+          id: `${scenario.id}-choice-1`,
+          label: 'Tap emergency fund, cut expenses',
+          consequences: {
+            bankDelta: 0,
+            savingsDelta: -amount * 0.5,
+            debtDelta: 0,
+            investDelta: 0,
+            healthDelta: -8,
+            notes: 'Used emergency fund to cover bills while job hunting. Health impact from stress.',
+          },
+          relatedAgent: 'crisisCoach',
+        },
+        {
+          id: `${scenario.id}-choice-2`,
+          label: 'Use credit cards for essentials',
+          consequences: {
+            bankDelta: 0,
+            savingsDelta: 0,
+            debtDelta: amount * 0.7,
+            investDelta: 0,
+            healthDelta: -12,
+            notes: 'Took on high-interest debt to cover living costs. Major health impact.',
+          },
+          relatedAgent: 'crisis',
+        },
+        {
+          id: `${scenario.id}-choice-3`,
+          label: 'Take gig work, stretch savings',
+          consequences: {
+            bankDelta: amount * 0.3, // Some gig income
+            savingsDelta: -amount * 0.3,
+            debtDelta: 0,
+            investDelta: 0,
+            healthDelta: -5,
+            notes: 'Hustled with side gigs while job hunting. Moderate stress but avoided debt.',
+          },
+          relatedAgent: 'mentor',
+        },
+      ];
+      
+    case 'bigUnexpectedBill':
+      return [
+        {
+          id: `${scenario.id}-choice-1`,
+          label: 'Pay from emergency fund',
+          consequences: {
+            bankDelta: 0,
+            savingsDelta: -amount,
+            debtDelta: 0,
+            investDelta: 0,
+            healthDelta: -3,
+            notes: 'This is exactly what emergency funds are for. Rebuild it over time.',
+          },
+          relatedAgent: 'crisisCoach',
+        },
+        {
+          id: `${scenario.id}-choice-2`,
+          label: 'Put on credit card',
+          consequences: {
+            bankDelta: 0,
+            savingsDelta: 0,
+            debtDelta: amount,
+            investDelta: 0,
+            healthDelta: -8,
+            notes: 'Added high-interest debt. Will cost more long-term.',
+          },
+          relatedAgent: 'crisis',
+        },
+        {
+          id: `${scenario.id}-choice-3`,
+          label: 'Split between checking & savings',
+          consequences: {
+            bankDelta: -amount * 0.4,
+            savingsDelta: -amount * 0.6,
+            debtDelta: 0,
+            investDelta: 0,
+            healthDelta: -5,
+            notes: 'Balanced approach. Depleted reserves but avoided debt.',
+          },
+          relatedAgent: 'mentor',
+        },
+      ];
+      
+    case 'rentHike':
+      return [
+        {
+          id: `${scenario.id}-choice-1`,
+          label: 'Accept & adjust budget',
+          consequences: {
+            bankDelta: 0,
+            savingsDelta: 0,
+            debtDelta: 0,
+            investDelta: 0,
+            healthDelta: -4,
+            notes: `Rent now $${amount}/month higher. Need to cut other expenses.`,
+          },
+          relatedAgent: 'crisisCoach',
+        },
+        {
+          id: `${scenario.id}-choice-2`,
+          label: 'Look for cheaper place (moving costs)',
+          consequences: {
+            bankDelta: -amount * 3, // Moving costs
+            savingsDelta: 0,
+            debtDelta: 0,
+            investDelta: 0,
+            healthDelta: -6,
+            notes: 'Paid moving costs but will save long-term on rent.',
+          },
+          relatedAgent: 'mentor',
+        },
+        {
+          id: `${scenario.id}-choice-3`,
+          label: 'Find a roommate',
+          consequences: {
+            bankDelta: amount * 0.5, // Roommate covers half
+            savingsDelta: 0,
+            debtDelta: 0,
+            investDelta: 0,
+            healthDelta: -2,
+            notes: 'Reduced rent burden but lost some privacy.',
+          },
+          relatedAgent: 'saverSiya',
+        },
+      ];
+      
     case 'marketCrash':
       return [
         {
@@ -724,6 +906,58 @@ export function generateChoices(scenario: Scenario, state: GameState): Choice[] 
 }
 
 /**
+ * Check and award achievements based on current state
+ * Returns array of newly earned achievement IDs
+ */
+function checkAchievements(state: GameState, choice: Choice): string[] {
+  const newAchievements: string[] = [];
+  const savingsAccount = state.accounts.find((a) => a.type === 'savings');
+  const currentScenarioType = state.lastScenario?.type;
+  const isCrisis = currentScenarioType === 'jobLoss' || 
+                   currentScenarioType === 'bigUnexpectedBill' || 
+                   currentScenarioType === 'rentHike';
+  
+  // Achievement: Crisis Survived - survived a crisis with positive health delta
+  if (isCrisis && 
+      (choice.consequences.healthDelta || 0) >= 0 && 
+      !state.achievements.includes('crisis-survived')) {
+    newAchievements.push('crisis-survived');
+  }
+  
+  // Achievement: First $100 saved - reached $100 in savings
+  if (savingsAccount && 
+      savingsAccount.balance >= 100 && 
+      !state.achievements.includes('first-100-saved')) {
+    newAchievements.push('first-100-saved');
+  }
+  
+  // Achievement: Stayed the course - did NOT panic sell during market crash
+  if (currentScenarioType === 'marketCrash' && 
+      (choice.consequences.investDelta || 0) >= 0 && // Didn't withdraw
+      !state.achievements.includes('stayed-the-course')) {
+    newAchievements.push('stayed-the-course');
+  }
+  
+  // Achievement: Emergency Fund - 3 months of expenses saved
+  const fixedTotal = calculateFixedCostsTotal(state.fixed);
+  if (savingsAccount && 
+      savingsAccount.balance >= fixedTotal * 3 && 
+      !state.achievements.includes('emergency-fund')) {
+    newAchievements.push('emergency-fund');
+  }
+  
+  // Achievement: Perfect Month - completed month with no health loss
+  const recentEntries = state.history.slice(-4); // Approximate 1 month
+  if (recentEntries.length >= 4 && 
+      recentEntries.every(e => (e.delta.healthDelta || 0) >= 0) &&
+      !state.achievements.includes('perfect-month')) {
+    newAchievements.push('perfect-month');
+  }
+  
+  return newAchievements;
+}
+
+/**
  * Resolve a choice and return updated game state
  * Pure function - returns new state without modifying input
  * 
@@ -750,11 +984,27 @@ export function resolveChoice(state: GameState, choice: Choice): GameState {
     };
   });
   
-  // Update health score
+  // Update health score with stronger penalties for crisis scenarios
+  const currentScenarioType = state.lastScenario?.type;
+  const isCrisis = currentScenarioType === 'jobLoss' || 
+                   currentScenarioType === 'bigUnexpectedBill' || 
+                   currentScenarioType === 'rentHike';
+  
+  let healthDelta = choice.consequences.healthDelta || 0;
+  
+  // Apply stronger penalties for missed essentials in crisis scenarios
+  if (isCrisis && healthDelta < 0) {
+    healthDelta = Math.floor(healthDelta * 1.3); // 30% stronger penalty
+  }
+  
   const newHealth = Math.min(
     100,
-    Math.max(0, state.health + (choice.consequences.healthDelta || 0))
+    Math.max(0, state.health + healthDelta)
   );
+  
+  // Determine if Crisis Coach should be shown
+  const showCrisisCoach = isCrisis && newHealth < 60; // Show coach if crisis + struggling
+  const crisisType = isCrisis ? currentScenarioType as 'jobLoss' | 'bigUnexpectedBill' | 'rentHike' : undefined;
   
   // Record decision in history - ensure all GameDelta fields are present
   const historyEntry = {
@@ -765,7 +1015,7 @@ export function resolveChoice(state: GameState, choice: Choice): GameState {
       savingsDelta: choice.consequences.savingsDelta || 0,
       debtDelta: choice.consequences.debtDelta || 0,
       investDelta: choice.consequences.investDelta || 0,
-      healthDelta: choice.consequences.healthDelta || 0,
+      healthDelta,
       notes: choice.consequences.notes,
     },
     at: new Date(),
@@ -779,13 +1029,44 @@ export function resolveChoice(state: GameState, choice: Choice): GameState {
     history: [...state.history, historyEntry],
   });
   
-  // Return new state
+  // Check for newly earned achievements
+  const newAchievements = checkAchievements(state, choice);
+  const updatedAchievements = [...state.achievements, ...newAchievements];
+  
+  // Increment months played after each choice
+  const newMonthsPlayed = state.monthsPlayed + 1;
+  
+  // Calculate net worth
+  const newNetWorth = calculateNetWorth(updatedAccounts);
+  
+  // Check investing unlock conditions
+  const shouldUnlock = !state.unlocked.investingDistrict && 
+                       shouldUnlockInvesting({
+                         ...state,
+                         accounts: updatedAccounts,
+                         health: newHealth,
+                         history: [...state.history, historyEntry],
+                       });
+  
+  const updatedUnlocks = shouldUnlock
+    ? { ...state.unlocked, investingDistrict: true }
+    : state.unlocked;
+  
+  // Return new state with uiHints and progression fields
   return {
     ...state,
     accounts: updatedAccounts,
     health: newHealth,
+    monthsPlayed: newMonthsPlayed,
+    netWorth: newNetWorth,
+    unlocked: updatedUnlocks,
+    achievements: updatedAchievements,
     lastScenario: nextScenario,
     history: [...state.history, historyEntry],
+    uiHints: {
+      showCrisisCoach,
+      crisisType,
+    },
   };
 }
 
@@ -927,6 +1208,13 @@ export function rebalance(
 /**
  * Service for game logic and state management using new domain model
  */
+/**
+ * Calculate net worth from accounts
+ */
+function calculateNetWorth(accounts: Account[]): number {
+  return accounts.reduce((sum, account) => sum + account.balance, 0);
+}
+
 export class GameLogicService {
   /**
    * Initialize a new game state for a player
@@ -965,9 +1253,12 @@ export class GameLogicService {
       incomePlan,
       health: 50,
       mood: 'okay',
+      monthsPlayed: 0,
+      netWorth: calculateNetWorth(accounts),
       unlocked: {
         investingDistrict: false,
       },
+      achievements: [],
       history: [],
     };
 

@@ -1,0 +1,562 @@
+import React, { useState, useEffect } from 'react';
+import { AppShell } from '../components/layout/AppShell';
+import { simulatePortfolio, SimulationResult } from '../api/investingApi';
+import { getGameState } from '../api/gameApi';
+import styles from './InvestingDistrict.module.css';
+
+type Profile = 'conservative' | 'balanced' | 'aggressive';
+type Step = 'profile' | 'simulate' | 'results';
+type Action = 'rebalance' | 'nothing' | 'panic';
+
+/**
+ * Investing District Page - Portfolio simulation and education
+ */
+const InvestingDistrict: React.FC = () => {
+  const [isUnlocked, setIsUnlocked] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [currentStep, setCurrentStep] = useState<Step>('profile');
+  const [selectedProfile, setSelectedProfile] = useState<Profile>('balanced');
+  const [simulation, setSimulation] = useState<SimulationResult | null>(null);
+  const [isSimulating, setIsSimulating] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+  const [appliedAction, setAppliedAction] = useState<Action | null>(null);
+
+  // Check if investing is unlocked (health >= 55 or dev mode)
+  useEffect(() => {
+    checkUnlockStatus();
+  }, []);
+
+  const checkUnlockStatus = async () => {
+    try {
+      const DEV_MODE = true; // TODO: Toggle this for production
+      
+      if (DEV_MODE) {
+        setIsUnlocked(true);
+        setIsLoading(false);
+        return;
+      }
+
+      const state = await getGameState();
+      const unlocked = state.health >= 55 || state.unlocked.investingDistrict;
+      setIsUnlocked(unlocked);
+    } catch (err) {
+      console.error('Failed to check unlock status:', err);
+      // Allow access on error (dev-friendly)
+      setIsUnlocked(true);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleProfileSelect = (profile: Profile) => {
+    setSelectedProfile(profile);
+    setCurrentStep('simulate');
+  };
+
+  const handleRunSimulation = async () => {
+    setIsSimulating(true);
+    setError(null);
+    setAppliedAction(null);
+
+    try {
+      const result = await simulatePortfolio(selectedProfile, 10000, 10);
+      setSimulation(result);
+      setCurrentStep('results');
+    } catch (err: any) {
+      setError(err.message || 'Failed to run simulation');
+    } finally {
+      setIsSimulating(false);
+    }
+  };
+
+  const handleAction = (action: Action) => {
+    if (!simulation) return;
+
+    setAppliedAction(action);
+
+    // Apply action transforms to simulation
+    let modifiedValues = [...simulation.monthlyValues];
+    let modifiedEndValue = simulation.endValue;
+
+    switch (action) {
+      case 'rebalance':
+        // Rebalancing reduces volatility, improves returns slightly
+        modifiedValues = simulation.monthlyValues.map((val, idx) => {
+          if (idx === 0) return val;
+          // Smooth out extreme movements
+          const change = val - simulation.monthlyValues[idx - 1];
+          return simulation.monthlyValues[idx - 1] + change * 0.9;
+        });
+        modifiedEndValue = modifiedValues[modifiedValues.length - 1] * 1.05; // 5% bonus
+        break;
+
+      case 'nothing':
+        // Do nothing - keep original simulation
+        break;
+
+      case 'panic':
+        // Panic selling locks in losses during downturns
+        const minValue = Math.min(...simulation.monthlyValues);
+        const minIndex = simulation.monthlyValues.indexOf(minValue);
+        
+        // Sell at the worst time, then miss recovery
+        modifiedValues = simulation.monthlyValues.map((val, idx) => {
+          if (idx <= minIndex) return val;
+          // Flat line after panic sell (miss recovery)
+          return minValue;
+        });
+        modifiedEndValue = minValue;
+        break;
+    }
+
+    setSimulation({
+      ...simulation,
+      monthlyValues: modifiedValues,
+      endValue: modifiedEndValue,
+      cagr: calculateCAGR(simulation.startValue, modifiedEndValue, simulation.years),
+    });
+  };
+
+  const calculateCAGR = (start: number, end: number, years: number): number => {
+    return Math.pow(end / start, 1 / years) - 1;
+  };
+
+  const handleReset = () => {
+    setCurrentStep('profile');
+    setSimulation(null);
+    setAppliedAction(null);
+    setError(null);
+  };
+
+  if (isLoading) {
+    return (
+      <AppShell>
+        <div className={styles.loading}>Loading...</div>
+      </AppShell>
+    );
+  }
+
+  if (!isUnlocked) {
+    return (
+      <AppShell>
+        <div className={styles.container}>
+          <div className={styles.lockedCard}>
+            <div className={styles.lockIcon}>🔒</div>
+            <h2 className={styles.lockedTitle}>Investing District Locked</h2>
+            <p className={styles.lockedText}>
+              Build your financial health to unlock investing features.
+            </p>
+            <div className={styles.unlockRequirements}>
+              <h3>Unlock Requirements:</h3>
+              <ul>
+                <li>✓ Reach Financial Health score of 55+</li>
+                <li>✓ Pay bills on time for 3 months</li>
+                <li>✓ Build an emergency fund</li>
+              </ul>
+            </div>
+            <p className={styles.lockedHint}>
+              💡 Keep making smart financial choices in the main game to improve your health score!
+            </p>
+          </div>
+        </div>
+      </AppShell>
+    );
+  }
+
+  return (
+    <AppShell>
+      <div className={styles.container}>
+        <header className={styles.header}>
+          <h1 className={styles.title}>📈 Investing District</h1>
+          <p className={styles.subtitle}>Simulate long-term portfolio performance</p>
+        </header>
+
+        {/* Stepper Progress */}
+        <div className={styles.stepper} role="navigation" aria-label="Simulation steps">
+          <div className={`${styles.step} ${currentStep === 'profile' ? styles.stepActive : (currentStep === 'simulate' || currentStep === 'results') ? styles.stepComplete : ''}`}>
+            <div className={styles.stepNumber}>1</div>
+            <div className={styles.stepLabel}>Choose Profile</div>
+          </div>
+          <div className={styles.stepLine} />
+          <div className={`${styles.step} ${currentStep === 'simulate' ? styles.stepActive : currentStep === 'results' ? styles.stepComplete : ''}`}>
+            <div className={styles.stepNumber}>2</div>
+            <div className={styles.stepLabel}>Run Simulation</div>
+          </div>
+          <div className={styles.stepLine} />
+          <div className={`${styles.step} ${currentStep === 'results' ? styles.stepActive : ''}`}>
+            <div className={styles.stepNumber}>3</div>
+            <div className={styles.stepLabel}>Review Results</div>
+          </div>
+        </div>
+
+        {/* Step 1: Profile Selection */}
+        {currentStep === 'profile' && (
+          <div className={styles.profileSelection}>
+            <h2 className={styles.sectionTitle}>Select Your Investment Profile</h2>
+            <div className={styles.profileGrid}>
+              <ProfileCard
+                title="Conservative"
+                profile="conservative"
+                description="Lower risk, steady growth"
+                allocation="30% stocks, 60% bonds, 10% cash"
+                selected={selectedProfile === 'conservative'}
+                onSelect={handleProfileSelect}
+              />
+              <ProfileCard
+                title="Balanced"
+                profile="balanced"
+                description="Moderate risk, balanced growth"
+                allocation="60% stocks, 35% bonds, 5% cash"
+                selected={selectedProfile === 'balanced'}
+                onSelect={handleProfileSelect}
+              />
+              <ProfileCard
+                title="Aggressive"
+                profile="aggressive"
+                description="Higher risk, maximum growth potential"
+                allocation="90% stocks, 10% bonds, 0% cash"
+                selected={selectedProfile === 'aggressive'}
+                onSelect={handleProfileSelect}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Step 2: Run Simulation */}
+        {currentStep === 'simulate' && (
+          <div className={styles.simulateStep}>
+            <h2 className={styles.sectionTitle}>Ready to Simulate</h2>
+            <div className={styles.simulateCard}>
+              <p className={styles.simulateText}>
+                <strong>Profile:</strong> {selectedProfile.charAt(0).toUpperCase() + selectedProfile.slice(1)}
+              </p>
+              <p className={styles.simulateText}>
+                <strong>Starting Amount:</strong> $10,000
+              </p>
+              <p className={styles.simulateText}>
+                <strong>Duration:</strong> 10 years (120 months)
+              </p>
+              {error && <div className={styles.error}>{error}</div>}
+              <div className={styles.buttonGroup}>
+                <button
+                  className={styles.buttonSecondary}
+                  onClick={() => setCurrentStep('profile')}
+                  disabled={isSimulating}
+                >
+                  ← Back
+                </button>
+                <button
+                  className={styles.buttonPrimary}
+                  onClick={handleRunSimulation}
+                  disabled={isSimulating}
+                >
+                  {isSimulating ? 'Simulating...' : 'Run Simulation →'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Step 3: Results */}
+        {currentStep === 'results' && simulation && (
+          <div className={styles.resultsStep}>
+            <h2 className={styles.sectionTitle}>Simulation Results</h2>
+            
+            {/* Summary Stats */}
+            <div className={styles.statsGrid}>
+              <StatCard
+                label="End Value"
+                value={`$${Math.round(simulation.endValue).toLocaleString()}`}
+                icon="💰"
+                color="#4CAF50"
+              />
+              <StatCard
+                label="CAGR"
+                value={`${(simulation.cagr * 100).toFixed(2)}%`}
+                icon="📈"
+                color="#2196F3"
+              />
+              <StatCard
+                label="Max Drawdown"
+                value={`${(simulation.maxDrawdown * 100).toFixed(1)}%`}
+                icon="📉"
+                color="#FF5722"
+              />
+              <StatCard
+                label="Total Return"
+                value={`${(((simulation.endValue - simulation.startValue) / simulation.startValue) * 100).toFixed(1)}%`}
+                icon="🎯"
+                color="#9C27B0"
+              />
+            </div>
+
+            {/* Chart */}
+            <div className={styles.chartCard}>
+              <h3 className={styles.chartTitle}>10-Year Portfolio Performance</h3>
+              <PortfolioChart data={simulation.monthlyValues} regimes={simulation.regimes} />
+            </div>
+
+            {/* Action Buttons */}
+            {!appliedAction && (
+              <div className={styles.actionsCard}>
+                <h3 className={styles.actionsTitle}>What would you do during volatility?</h3>
+                <p className={styles.actionsSubtitle}>
+                  Choose an action to see how it affects your outcome
+                </p>
+                <div className={styles.actionButtons}>
+                  <button
+                    className={styles.actionButton}
+                    onClick={() => handleAction('rebalance')}
+                  >
+                    <span className={styles.actionIcon}>⚖️</span>
+                    <span className={styles.actionLabel}>Rebalance Yearly</span>
+                    <span className={styles.actionHint}>Maintain target allocation</span>
+                  </button>
+                  <button
+                    className={styles.actionButton}
+                    onClick={() => handleAction('nothing')}
+                  >
+                    <span className={styles.actionIcon}>🧘</span>
+                    <span className={styles.actionLabel}>Do Nothing</span>
+                    <span className={styles.actionHint}>Stay the course</span>
+                  </button>
+                  <button
+                    className={styles.actionButton}
+                    onClick={() => handleAction('panic')}
+                  >
+                    <span className={styles.actionIcon}>😱</span>
+                    <span className={styles.actionLabel}>Panic Sell</span>
+                    <span className={styles.actionHint}>Sell during downturn</span>
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Action Result */}
+            {appliedAction && (
+              <div className={styles.actionResult}>
+                <h3 className={styles.resultTitle}>
+                  {appliedAction === 'rebalance' && '✅ Rebalancing Result'}
+                  {appliedAction === 'nothing' && '✅ Stay the Course Result'}
+                  {appliedAction === 'panic' && '⚠️ Panic Selling Result'}
+                </h3>
+                <p className={styles.resultText}>
+                  {appliedAction === 'rebalance' &&
+                    'Rebalancing yearly kept your portfolio aligned and captured gains. End value improved by ~5%.'}
+                  {appliedAction === 'nothing' &&
+                    'Staying invested through ups and downs is often the best strategy. Your original simulation stands.'}
+                  {appliedAction === 'panic' &&
+                    'Panic selling locked in losses and missed the recovery. This demonstrates why emotional decisions hurt returns.'}
+                </p>
+              </div>
+            )}
+
+            <div className={styles.buttonGroup}>
+              <button className={styles.buttonSecondary} onClick={handleReset}>
+                Start Over
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </AppShell>
+  );
+};
+
+/**
+ * Profile Card Component
+ */
+interface ProfileCardProps {
+  title: string;
+  profile: Profile;
+  description: string;
+  allocation: string;
+  selected: boolean;
+  onSelect: (profile: Profile) => void;
+}
+
+const ProfileCard: React.FC<ProfileCardProps> = ({
+  title,
+  profile,
+  description,
+  allocation,
+  selected,
+  onSelect,
+}) => {
+  return (
+    <button
+      className={`${styles.profileCard} ${selected ? styles.profileCardSelected : ''}`}
+      onClick={() => onSelect(profile)}
+      aria-pressed={selected}
+      role="radio"
+    >
+      <h3 className={styles.profileTitle}>{title}</h3>
+      <p className={styles.profileDescription}>{description}</p>
+      <p className={styles.profileAllocation}>{allocation}</p>
+      {selected && <div className={styles.selectedBadge}>✓ Selected</div>}
+    </button>
+  );
+};
+
+/**
+ * Stat Card Component
+ */
+interface StatCardProps {
+  label: string;
+  value: string;
+  icon: string;
+  color: string;
+}
+
+const StatCard: React.FC<StatCardProps> = ({ label, value, icon, color }) => {
+  return (
+    <div className={styles.statCard}>
+      <div className={styles.statIcon} style={{ color }}>
+        {icon}
+      </div>
+      <div className={styles.statLabel}>{label}</div>
+      <div className={styles.statValue} style={{ color }}>
+        {value}
+      </div>
+    </div>
+  );
+};
+
+/**
+ * Portfolio Chart Component - Accessible SVG line chart
+ */
+interface PortfolioChartProps {
+  data: number[];
+  regimes: Array<{ regime: string; startMonth: number; endMonth: number }>;
+}
+
+const PortfolioChart: React.FC<PortfolioChartProps> = ({ data, regimes }) => {
+  const width = 800;
+  const height = 300;
+  const padding = 40;
+
+  const minValue = Math.min(...data);
+  const maxValue = Math.max(...data);
+  const valueRange = maxValue - minValue;
+
+  // Scale functions
+  const xScale = (index: number) => padding + (index / (data.length - 1)) * (width - 2 * padding);
+  const yScale = (value: number) =>
+    height - padding - ((value - minValue) / valueRange) * (height - 2 * padding);
+
+  // Generate path
+  const pathData = data
+    .map((value, index) => {
+      const x = xScale(index);
+      const y = yScale(value);
+      return index === 0 ? `M ${x} ${y}` : `L ${x} ${y}`;
+    })
+    .join(' ');
+
+  // Area fill path
+  const areaData =
+    pathData +
+    ` L ${xScale(data.length - 1)} ${height - padding}` +
+    ` L ${padding} ${height - padding}` +
+    ' Z';
+
+  return (
+    <svg
+      width="100%"
+      height={height}
+      viewBox={`0 0 ${width} ${height}`}
+      role="img"
+      aria-label={`Portfolio performance chart showing growth from $${Math.round(data[0])} to $${Math.round(data[data.length - 1])} over ${data.length - 1} months`}
+      className={styles.chart}
+    >
+      {/* Regime backgrounds */}
+      {regimes.map((regime, idx) => {
+        const x1 = xScale(regime.startMonth);
+        const x2 = xScale(regime.endMonth);
+        const color =
+          regime.regime === 'bull'
+            ? 'rgba(76, 175, 80, 0.1)'
+            : regime.regime === 'crash'
+            ? 'rgba(244, 67, 54, 0.1)'
+            : 'rgba(158, 158, 158, 0.1)';
+
+        return (
+          <rect
+            key={idx}
+            x={x1}
+            y={padding}
+            width={x2 - x1}
+            height={height - 2 * padding}
+            fill={color}
+            aria-label={`${regime.regime} market from month ${regime.startMonth} to ${regime.endMonth}`}
+          />
+        );
+      })}
+
+      {/* Grid lines */}
+      {[0, 0.25, 0.5, 0.75, 1].map((ratio) => {
+        const y = height - padding - ratio * (height - 2 * padding);
+        const value = minValue + ratio * valueRange;
+        return (
+          <g key={ratio}>
+            <line
+              x1={padding}
+              y1={y}
+              x2={width - padding}
+              y2={y}
+              stroke="#e0e0e0"
+              strokeWidth="1"
+            />
+            <text x={padding - 10} y={y + 5} fontSize="12" fill="#666" textAnchor="end">
+              ${Math.round(value / 1000)}k
+            </text>
+          </g>
+        );
+      })}
+
+      {/* X-axis labels */}
+      {[0, 2, 4, 6, 8, 10].map((year) => {
+        const month = year * 12;
+        const x = xScale(month);
+        return (
+          <text key={year} x={x} y={height - padding + 20} fontSize="12" fill="#666" textAnchor="middle">
+            {year}y
+          </text>
+        );
+      })}
+
+      {/* Area fill */}
+      <path d={areaData} fill="rgba(33, 150, 243, 0.2)" />
+
+      {/* Line path */}
+      <path d={pathData} fill="none" stroke="#2196F3" strokeWidth="2" />
+
+      {/* Data points (focusable) */}
+      {data.map((value, index) => {
+        // Only show points every 12 months to reduce clutter
+        if (index % 12 !== 0 && index !== data.length - 1) return null;
+
+        const x = xScale(index);
+        const y = yScale(value);
+
+        return (
+          <circle
+            key={index}
+            cx={x}
+            cy={y}
+            r="4"
+            fill="#2196F3"
+            stroke="white"
+            strokeWidth="2"
+            tabIndex={0}
+            role="button"
+            aria-label={`Month ${index}: $${Math.round(value)}`}
+            className={styles.chartPoint}
+          />
+        );
+      })}
+    </svg>
+  );
+};
+
+export default InvestingDistrict;

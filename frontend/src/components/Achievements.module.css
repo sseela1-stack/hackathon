@@ -1,0 +1,223 @@
+/* Achievement Container */
+.container {
+  padding: 20px;
+}
+
+.title {
+  font-size: 24px;
+  font-weight: 600;
+  margin-bottom: 20px;
+  color: #1a1a1a;
+}
+
+/* Achievement Grid */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+/* Achievement Badge */
+.badge {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  border-radius: 12px;
+  border: 2px solid #e0e0e0;
+  background: white;
+  transition: all 0.3s ease;
+}
+
+.badge:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Earned Badge */
+.badge.earned {
+  border-color: #4caf50;
+  background: linear-gradient(135deg, #ffffff 0%, #f1f8f4 100%);
+}
+
+.badge.earned .icon {
+  filter: none;
+  transform: scale(1);
+}
+
+/* Locked Badge */
+.badge.locked {
+  opacity: 0.5;
+  border-color: #bdbdbd;
+}
+
+.badge.locked .icon {
+  filter: grayscale(100%);
+  opacity: 0.4;
+}
+
+/* Badge Icon */
+.icon {
+  font-size: 40px;
+  flex-shrink: 0;
+  transition: all 0.3s ease;
+}
+
+/* Badge Info */
+.info {
+  flex: 1;
+}
+
+.badgeTitle {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0 0 4px 0;
+  color: #1a1a1a;
+}
+
+.description {
+  font-size: 13px;
+  margin: 0;
+  color: #666;
+  line-height: 1.4;
+}
+
+/* Checkmark */
+.checkmark {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 24px;
+  height: 24px;
+  background: #4caf50;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+/* Empty State */
+.empty {
+  padding: 40px;
+  text-align: center;
+}
+
+.emptyText {
+  font-size: 16px;
+  color: #666;
+  margin: 0;
+}
+
+/* Achievement Counter */
+.counter {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+  border-radius: 20px;
+  font-weight: 600;
+  color: #1a1a1a;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease;
+}
+
+.counter:hover {
+  transform: scale(1.05);
+}
+
+.counterIcon {
+  font-size: 18px;
+}
+
+.counterText {
+  font-size: 14px;
+  letter-spacing: 0.5px;
+}
+
+/* Achievement Toast */
+.toast {
+  position: fixed;
+  top: 80px;
+  right: 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 20px;
+  background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(76, 175, 80, 0.4);
+  color: white;
+  animation: slideInRight 0.4s ease, fadeOut 0.4s ease 3.6s forwards;
+  z-index: 1000;
+  max-width: 320px;
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(400px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeOut {
+  to {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+}
+
+.toastIcon {
+  font-size: 32px;
+  flex-shrink: 0;
+  animation: bounce 0.6s ease 0.4s;
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+}
+
+.toastInfo {
+  flex: 1;
+}
+
+.toastTitle {
+  font-size: 14px;
+  font-weight: 700;
+  margin: 0 0 4px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.toastDescription {
+  font-size: 16px;
+  font-weight: 500;
+  margin: 0;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .toast {
+    top: 60px;
+    right: 10px;
+    left: 10px;
+    max-width: none;
+  }
+}

@@ -3,6 +3,19 @@ import { AgentType } from '../types/game';
 const API_BASE_URL = 'http://localhost:4000/api';
 
 /**
+ * Get or create a stable player ID stored in localStorage
+ */
+function getPlayerId(): string {
+  const k = 'finquest_pid';
+  let id = localStorage.getItem(k);
+  if (!id) {
+    id = crypto.randomUUID();
+    localStorage.setItem(k, id);
+  }
+  return id;
+}
+
+/**
  * API functions for AI agent-related endpoints
  */
 
@@ -30,6 +43,7 @@ export const getAgentMessage = async (
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'x-player-id': getPlayerId(),
       },
       body: JSON.stringify({ context: context || {} }),
     });
@@ -39,7 +53,7 @@ export const getAgentMessage = async (
     }
     
     const data = await response.json();
-    return data.data.message;
+    return data.message;
   } catch (error) {
     console.error(`Error getting message from ${agentType}:`, error);
     throw error;

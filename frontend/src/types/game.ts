@@ -2,6 +2,69 @@
  * Type definitions matching backend models
  */
 
+export interface Player {
+  id: string;
+  role: 'student' | 'earlyCareer' | 'midCareer';
+  mood: 'anxious' | 'okay' | 'confident';
+  difficulty: 'easy' | 'normal' | 'hard';
+  createdAt: string;
+}
+
+export interface Account {
+  id: string;
+  type: 'checking' | 'savings' | 'investment';
+  balance: number;
+}
+
+export interface FixedExpenses {
+  rent: number;
+  food: number;
+  transport: number;
+  phoneInternet: number;
+}
+
+export interface IncomePlan {
+  baseIncome: number;
+  difficultyMultiplier: number;
+  eventsDelta: number;
+}
+
+export interface Scenario {
+  id: string;
+  type: string;
+  title: string;
+  description: string;
+  amount: number;
+  choices?: Choice[];
+  meta: {
+    category: string;
+    difficulty: string;
+    generatedAt: string;
+  };
+}
+
+export interface GameState {
+  player: Player;
+  accounts: Account[];
+  fixed: FixedExpenses;
+  incomePlan: IncomePlan;
+  health: number;
+  mood: Mood;
+  monthsPlayed: number;
+  netWorth: number;
+  unlocked: {
+    investingDistrict: boolean;
+  };
+  achievements: string[];
+  uiHints?: {
+    showCrisisCoach?: boolean;
+    crisisType?: 'jobLoss' | 'bigUnexpectedBill' | 'rentHike';
+  };
+  history: any[];
+  lastScenario: Scenario;
+}
+
+// Legacy types (kept for compatibility)
 export interface User {
   id: string;
   name: string;
@@ -25,15 +88,29 @@ export interface Event {
 
 export interface Choice {
   id: string;
-  text: string;
-  description: string;
-  outcomes: {
-    checkingChange?: number;
-    savingsChange?: number;
-    investmentChange?: number;
-    healthScoreChange?: number;
+  label: string;
+  consequences: {
+    bankDelta: number;
+    savingsDelta: number;
+    debtDelta: number;
+    investDelta: number;
+    healthDelta: number;
+    notes?: string;
   };
   relatedAgent?: AgentType;
+  // Backward compatibility
+  text?: string;
+  description?: string;
+}
+
+export interface ChoiceResponse {
+  success: boolean;
+  state: GameState;
+  applied: {
+    choice: string;
+    consequences: Choice['consequences'];
+  };
+  unlocked?: string[];
 }
 
 export type AgentType = 
@@ -53,24 +130,18 @@ export interface GameState {
 }
 
 export interface MakeChoiceRequest {
-  eventId: string;
+  scenarioId: string;
   choiceId: string;
-  agentFollowed?: AgentType;
-  mood: Mood;
+  mood?: Mood;
 }
 
 export interface MoneyPlaybook {
-  totalDays: number;
-  totalIncome: number;
-  totalSpending: number;
-  totalSaved: number;
-  totalInvested: number;
-  healthScoreProgression: number[];
-  keyDecisions: {
-    day: number;
-    event: string;
-    choice: string;
-    outcome: string;
-  }[];
-  insights: string[];
+  patterns: string[];
+  tips: string[];
+  stats: {
+    onTimeBillsPct: number;
+    avgSavingsRate: number;
+    maxDebt: number;
+    crisisHandled: number;
+  };
 }

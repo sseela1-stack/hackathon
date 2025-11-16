@@ -15,6 +15,8 @@ import {
 } from '../services/gameLogic';
 import { gameRepo, ConflictError } from '../services/repo';
 import { GameState, Mood, Role, Difficulty } from '../models/GameState';
+import { generatePlaybook } from '../services/playbook';
+import { chatWithMentor } from '../services/azureChatService';
 import createHttpError from 'http-errors';
 
 // Default player ID for development
@@ -65,9 +67,16 @@ export async function getGameState(
     const existing = await gameRepo.loadState(playerId);
 
     if (existing) {
+      // Add choices to the scenario if they don't exist
+      const state = existing.snapshot;
+      if (state.lastScenario && (!state.lastScenario.choices || state.lastScenario.choices.length === 0)) {
+        const choices = generateChoices(state.lastScenario, state);
+        state.lastScenario = { ...state.lastScenario, choices };
+      }
+      
       res.json({
         success: true,
-        state: existing.snapshot,
+        state,
         playerId,
       });
       return;
@@ -102,12 +111,23 @@ export async function getGameState(
       heldThroughVolatility: false,
     });
 
+    // Generate choices for the initial scenario
+    if (initialState.lastScenario) {
+      const choices = generateChoices(initialState.lastScenario, initialState);
+      initialState.lastScenario.choices = choices;
+    }
+
+    const stateWithChoices = {
+      ...initialState,
+      health: initialHealth,
+    };
+
     // Save initial state (expectedVersion = 0 for new records)
-    await gameRepo.saveState(playerId, initialState, 0, initialHealth);
+    await gameRepo.saveState(playerId, stateWithChoices, 0, initialHealth);
 
     res.json({
       success: true,
-      state: { ...initialState, health: initialHealth },
+      state: stateWithChoices,
       playerId,
     });
   } catch (error) {
@@ -182,6 +202,14 @@ export async function postChoice(
       newState.fixed
     );
     newState = { ...newState, incomePlan: updatedIncomePlan };
+
+    // Generate new scenario with choices for next turn
+    const nextScenario = gameLogicService.generateScenario(newState);
+    const nextChoices = generateChoices(nextScenario, newState);
+    newState = {
+      ...newState,
+      lastScenario: { ...nextScenario, choices: nextChoices },
+    };
 
     // Recalculate health score based on current metrics
     const checkingAccount = newState.accounts.find((a) => a.type === 'checking');
@@ -292,6 +320,9 @@ export async function postChoice(
         wasInvestingLocked && newState.unlocked.investingDistrict
           ? ['investingDistrict']
           : [],
+      newAchievements: newState.achievements.filter(
+        (a) => !currentState.achievements.includes(a)
+      ),
     });
   } catch (error) {
     console.error('Error in postChoice:', error);
@@ -299,138 +330,11 @@ export async function postChoice(
   }
 }
 
-/**
- * Analyze player patterns from event history
- */
-function analyzePatterns(history: Array<{ choiceId: string; delta: any }>): string[] {
-  const patterns: string[] = [];
 
-  if (history.length < 3) {
-    return ['Not enough decisions yet to identify patterns'];
-  }
-
-  // Pattern 1: Spending behavior
-  const spendingChoices = history.filter(
-    (h) =>
-      h.choiceId.includes('yolo') ||
-      h.choiceId.includes('trip') ||
-      h.delta.bankDelta < -200
-  );
-  const spendingRatio = spendingChoices.length / history.length;
-
-  if (spendingRatio > 0.5) {
-    patterns.push('You often choose immediate enjoyment over long-term savings');
-  } else if (spendingRatio < 0.2) {
-    patterns.push('You consistently prioritize saving over spending');
-  }
-
-  // Pattern 2: Debt usage
-  const debtChoices = history.filter((h) => h.delta.debtDelta > 0);
-  if (debtChoices.length > 2) {
-    patterns.push('You frequently rely on credit when faced with expenses');
-  } else if (debtChoices.length === 0 && history.length > 5) {
-    patterns.push('You successfully avoid taking on debt');
-  }
-
-  // Pattern 3: Emergency fund usage
-  const savingsUsage = history.filter((h) => h.delta.savingsDelta < -100);
-  if (savingsUsage.length > 3) {
-    patterns.push('You often dip into your emergency fund instead of using checking');
-  }
-
-  // Pattern 4: Bill payment behavior
-  const latePayments = history.filter(
-    (h) => h.choiceId.includes('late') || h.delta.healthDelta < -3
-  );
-  if (latePayments.length > 1) {
-    patterns.push('You sometimes pay bills late, which hurts your financial health');
-  }
-
-  // Pattern 5: Investment discipline
-  const investmentMoves = history.filter((h) => Math.abs(h.delta.investDelta) > 0);
-  if (investmentMoves.length > 2) {
-    const panicSells = history.filter((h) => h.choiceId.includes('panic'));
-    if (panicSells.length > 0) {
-      patterns.push('You tend to panic during market downturns');
-    } else {
-      patterns.push('You actively manage your investments');
-    }
-  }
-
-  // Default pattern if none detected
-  if (patterns.length === 0) {
-    patterns.push('Your financial decisions show a balanced approach');
-  }
-
-  return patterns.slice(0, 3); // Return top 3 patterns
-}
-
-/**
- * Generate personalized tips based on patterns and state
- */
-function generateTips(state: GameState, patterns: string[]): string[] {
-  const tips: string[] = [];
-
-  // Tip based on health score
-  if (state.health < 40) {
-    tips.push('Focus on paying bills on time and building a small emergency fund');
-  } else if (state.health < 60 && !state.unlocked.investingDistrict) {
-    tips.push('Keep up the good habits to unlock the Investing District');
-  }
-
-  // Tip based on patterns
-  if (patterns.some((p) => p.includes('immediate enjoyment'))) {
-    tips.push('Try a 24-hour rule: wait a day before making discretionary purchases');
-  }
-
-  if (patterns.some((p) => p.includes('credit') || p.includes('debt'))) {
-    tips.push('Build a small emergency buffer to avoid relying on credit cards');
-  }
-
-  if (patterns.some((p) => p.includes('emergency fund'))) {
-    tips.push(
-      'Try to cover monthly expenses from checking; save your emergency fund for true emergencies'
-    );
-  }
-
-  // Tip based on accounts
-  const savingsAccount = state.accounts.find((a) => a.type === 'savings');
-  const fixedTotal =
-    state.fixed.rent +
-    state.fixed.food +
-    state.fixed.transport +
-    state.fixed.phoneInternet +
-    (state.fixed.other || 0);
-  const emergencyMonths = savingsAccount ? savingsAccount.balance / fixedTotal : 0;
-
-  if (emergencyMonths < 3) {
-    tips.push('Aim to save 3-6 months of expenses in your emergency fund');
-  }
-
-  // Tip for good performance
-  if (state.health >= 70) {
-    tips.push('Great job! Consider automating your savings to maintain these habits');
-  }
-
-  // Investment tip if unlocked
-  if (state.unlocked.investingDistrict) {
-    const investmentAccount = state.accounts.find((a) => a.type === 'investment');
-    if (!investmentAccount || investmentAccount.balance < 500) {
-      tips.push('Start small with investing - even $50/month adds up over time');
-    }
-  }
-
-  // General wisdom
-  if (tips.length < 2) {
-    tips.push('Remember: financial health is about consistent habits, not perfection');
-  }
-
-  return tips.slice(0, 3); // Return top 3 tips
-}
 
 /**
  * GET /api/game/playbook
- * Generate personalized playbook with patterns and tips from event history
+ * Generate personalized playbook with patterns and tips using playbook service
  */
 export async function getPlaybook(
   req: Request,
@@ -451,40 +355,158 @@ export async function getPlaybook(
 
     const state = existing.snapshot;
 
-    // Get event history from database
-    const eventHistory = await gameRepo.getHistory(playerId, 100);
-
-    // Analyze patterns from event history
-    const patterns = analyzePatterns(eventHistory);
-
-    // Generate tips
-    const tips = generateTips(state, patterns);
-
-    // Additional summary stats
-    const totalDays = eventHistory.length;
-    const checkingAccount = state.accounts.find((a) => a.type === 'checking');
-    const savingsAccount = state.accounts.find((a) => a.type === 'savings');
-    const investmentAccount = state.accounts.find((a) => a.type === 'investment');
+    // Generate playbook using the dedicated service
+    const playbook = generatePlaybook(state);
 
     res.json({
       success: true,
-      playbook: {
-        patterns,
-        tips,
-        summary: {
-          totalDecisions: totalDays,
-          healthScore: state.health,
-          currentBalances: {
-            checking: checkingAccount?.balance || 0,
-            savings: savingsAccount?.balance || 0,
-            investment: investmentAccount?.balance || 0,
-          },
-          investingUnlocked: state.unlocked.investingDistrict,
-        },
-      },
+      playbook,
     });
   } catch (error) {
     console.error('Error in getPlaybook:', error);
+    next(error);
+  }
+}
+
+/**
+ * PATCH /api/game/state/ui
+ * Clear UI hints (e.g., dismiss Crisis Coach banner)
+ */
+export async function patchUiHints(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  try {
+    const playerId = getPlayerId(req);
+
+    // Load current state
+    const existing = await gameRepo.loadState(playerId);
+    if (!existing) {
+      throw createHttpError(404, 'Game state not found');
+    }
+
+    const { snapshot: currentState, version: currentVersion } = existing;
+
+    // Clear uiHints
+    const updatedState = {
+      ...currentState,
+      uiHints: {
+        showCrisisCoach: false,
+        crisisType: undefined,
+      },
+    };
+
+    // Save updated state
+    await gameRepo.saveState(playerId, updatedState, currentVersion, currentState.health);
+
+    res.json({
+      success: true,
+      state: updatedState,
+    });
+  } catch (error) {
+    console.error('Error in patchUiHints:', error);
+    next(error);
+  }
+}
+
+/**
+ * POST /api/game/mood
+ * Update player's mood which affects scenario generation and AI agent tone
+ * Body: { mood: 'anxious' | 'okay' | 'confident' }
+ */
+export async function postMood(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  try {
+    const playerId = getPlayerId(req);
+
+    // Validate mood
+    const moodSchema = z.object({
+      mood: z.enum(['anxious', 'okay', 'confident']),
+    });
+
+    const validation = moodSchema.safeParse(req.body);
+    if (!validation.success) {
+      throw createHttpError(400, 'Invalid mood', {
+        details: validation.error.issues,
+      });
+    }
+
+    const { mood } = validation.data;
+
+    // Load current state
+    const existing = await gameRepo.loadState(playerId);
+    if (!existing) {
+      throw createHttpError(404, 'Game state not found');
+    }
+
+    const { snapshot: currentState, version: currentVersion } = existing;
+
+    // Update mood in both player profile and game state
+    const updatedState = {
+      ...currentState,
+      mood,
+      player: {
+        ...currentState.player,
+        mood,
+      },
+    };
+
+    // Save updated state
+    await gameRepo.saveState(playerId, updatedState, currentVersion, currentState.health);
+
+    res.json({
+      success: true,
+      mood,
+      message: `Mood updated to ${mood}. This will affect future scenarios and AI guidance.`,
+    });
+  } catch (error) {
+    console.error('Error in postMood:', error);
+    next(error);
+  }
+}
+
+/**
+ * POST /api/game/chat
+ * Chat with financial mentor using Azure OpenAI
+ * Request body: { message: string, conversationHistory?: Array<{role, content}> }
+ */
+export async function postChatMessage(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  try {
+    const playerId = getPlayerId(req);
+    const { message, conversationHistory = [] } = req.body;
+
+    if (!message || typeof message !== 'string') {
+      res.status(400).json({ error: 'Message is required' });
+      return;
+    }
+
+    // Get current game state for context
+    const stateData = await gameRepo.loadState(playerId);
+    const currentState = stateData?.snapshot || null;
+
+    if (!currentState) {
+      res.status(404).json({ error: 'Game state not found. Please start a new game first.' });
+      return;
+    }
+
+    // Call Azure OpenAI with game state context
+    const response = await chatWithMentor(message, currentState, conversationHistory);
+
+    res.json({
+      success: true,
+      response,
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    console.error('Error in postChatMessage:', error);
     next(error);
   }
 }

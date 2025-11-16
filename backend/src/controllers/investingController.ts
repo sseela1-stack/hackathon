@@ -1,194 +1,173 @@
 /**
  * Investing Controller
- * Handles investment simulation and portfolio management endpoints
+ * Educational portfolio simulation with DCA, fees, rebalancing, shocks, Monte Carlo
  */
 
 import { Request, Response, NextFunction } from 'express';
 import { z } from 'zod';
-import { simulateYear, rebalance } from '../services/gameLogic';
-import { PortfolioMix } from '../models/GameState';
+import { simulatePortfolio, monteCarlo, PORTFOLIO_PROFILES, PortfolioMix } from '../services/investingService';
 import createHttpError from 'http-errors';
 
 /**
- * Predefined portfolio profiles
+ * Zod schema for portfolio mix
  */
-const PORTFOLIO_PROFILES: Record<string, PortfolioMix> = {
-  conservative: {
-    stocks: 0.3, // 30% stocks
-    bonds: 0.6, // 60% bonds
-    cash: 0.1,  // 10% cash
+const portfolioMixSchema = z.object({
+  stocks: z.number().min(0).max(1),
+  bonds: z.number().min(0).max(1),
+  cash: z.number().min(0).max(1),
+}).refine(
+  (mix) => {
+    const sum = mix.stocks + mix.bonds + mix.cash;
+    return Math.abs(sum - 1.0) < 0.02; // Allow small rounding errors
   },
-  balanced: {
-    stocks: 0.6, // 60% stocks
-    bonds: 0.3, // 30% bonds
-    cash: 0.1,  // 10% cash
-  },
-  aggressive: {
-    stocks: 0.8, // 80% stocks
-    bonds: 0.15, // 15% bonds
-    cash: 0.05, // 5% cash
-  },
-};
+  { message: 'Portfolio mix must sum to ~1.0' }
+);
 
 /**
- * Zod schema for simulate query parameters
+ * Zod schema for market shocks
  */
-const simulateQuerySchema = z.object({
-  profile: z.enum(['conservative', 'balanced', 'aggressive']).default('balanced'),
-  start: z.coerce.number().positive().default(1000),
-  market: z.enum(['bull', 'bear', 'sideways']).optional().default('sideways'),
+const marketShocksSchema = z.object({
+  crashAtMonth: z.number().int().min(0).optional(),
+  crashPct: z.number().min(-1).max(0).optional(),
+  inflationDriftCutBps: z.number().min(0).max(500).optional(),
+  pauseContribFrom: z.number().int().min(0).optional(),
+  pauseContribTo: z.number().int().min(0).optional(),
+}).optional();
+
+/**
+ * Zod schema for glide path
+ */
+const glidePathSchema = z.object({
+  startMix: portfolioMixSchema,
+  endMix: portfolioMixSchema,
+}).optional();
+
+/**
+ * Zod schema for simulate request
+ */
+const simulateBodySchema = z.object({
+  profile: z.enum(['conservative', 'balanced', 'aggressive']),
+  startValue: z.number().positive(),
+  years: z.number().int().min(1).max(40),
+  seed: z.string().optional(),
+  contribMonthly: z.number().min(0).optional(),
+  feesBps: z.number().min(0).max(100).optional().default(10),
+  rebalance: z.enum(['none', 'annual', 'threshold']).optional().default('none'),
+  thresholdPct: z.number().min(0).max(1).optional().default(0.05),
+  shocks: marketShocksSchema,
+  sequencePreset: z.enum(['normal', 'badFirstYears', 'goodFirstYears']).optional(),
+  glidePath: glidePathSchema,
 });
 
 /**
- * Zod schema for rebalance request body
+ * Zod schema for Monte Carlo request
  */
-const rebalanceBodySchema = z.object({
-  path: z.array(z.number().nonnegative()).min(1, 'Path must contain at least one value'),
-  targetMix: z.object({
-    stocks: z.number().min(0).max(1),
-    bonds: z.number().min(0).max(1),
-    cash: z.number().min(0).max(1),
-  }).refine(
-    (mix) => {
-      const sum = mix.stocks + mix.bonds + mix.cash;
-      return Math.abs(sum - 1.0) < 0.01; // Allow small rounding errors
-    },
-    { message: 'Portfolio mix percentages must sum to 1.0' }
-  ),
+const monteCarloBodySchema = simulateBodySchema.extend({
+  runs: z.number().int().min(10).max(500),
+  targetAmount: z.number().positive(),
 });
 
 /**
- * GET /api/investing/simulate
- * Simulates a 12-month investment portfolio performance
- * 
- * Query params:
- * - profile: conservative | balanced | aggressive (default: balanced)
- * - start: number (starting portfolio value, default: 1000)
- * - market: bull | bear | sideways (default: sideways)
- * 
- * Returns:
- * - endValue: final portfolio value after 12 months
- * - monthlyPath: array of 13 values (month 0-12)
- * - totalReturn: absolute gain/loss
- * - totalReturnPercent: percentage gain/loss
- * - mix: portfolio allocation used
- * - profile: profile name used
+ * POST /api/investing/simulate
+ * Educational portfolio simulation with DCA, fees, rebalancing, shocks
  */
-export async function getSimulate(
+export async function postSimulate(
   req: Request,
   res: Response,
   next: NextFunction
 ): Promise<void> {
   try {
-    // Validate query parameters
-    const validation = simulateQuerySchema.safeParse(req.query);
-    if (!validation.success) {
-      throw createHttpError(400, 'Invalid query parameters', {
-        details: validation.error.issues,
-      });
-    }
-
-    const { profile, start, market } = validation.data;
-
-    // Get portfolio mix for profile
-    const mix = PORTFOLIO_PROFILES[profile];
-
-    // Run simulation
-    const result = simulateYear(mix, start, market);
-
-    res.json({
-      success: true,
-      simulation: {
-        ...result,
-        mix,
-        profile,
-        startValue: start,
-        market,
-      },
-    });
-  } catch (error) {
-    console.error('Error in getSimulate:', error);
-    next(error);
-  }
-}
-
-/**
- * POST /api/investing/rebalance
- * Analyzes a portfolio path and provides rebalancing recommendations
- * 
- * Body:
- * - path: number[] - historical portfolio values
- * - targetMix: PortfolioMix - desired allocation
- * 
- * Returns:
- * - rebalanceNeeded: boolean
- * - recommendations: string[] - actionable advice
- * - currentPath: the input path
- * - targetMix: the target allocation
- * - analysis: summary statistics
- */
-export async function postRebalance(
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> {
-  try {
-    // Validate request body
-    const validation = rebalanceBodySchema.safeParse(req.body);
+    const validation = simulateBodySchema.safeParse(req.body);
     if (!validation.success) {
       throw createHttpError(400, 'Invalid request body', {
         details: validation.error.issues,
       });
     }
 
-    const { path, targetMix } = validation.data;
+    const { profile, ...params } = validation.data;
+    const playerId = req.headers['x-player-id'] as string || 'anonymous';
+    
+    // Generate seed if not provided
+    const seed = params.seed || `${playerId}:${profile}:${params.years}`;
+    
+    // Get portfolio mix from profile
+    const mix = PORTFOLIO_PROFILES[profile];
 
-    // Calculate some basic statistics
-    const startValue = path[0];
-    const endValue = path[path.length - 1];
-    const totalReturn = endValue - startValue;
-    const totalReturnPercent = (totalReturn / startValue) * 100;
-
-    // Find max and min values for volatility indication
-    const maxValue = Math.max(...path);
-    const minValue = Math.min(...path);
-    const volatilityRange = maxValue - minValue;
-    const volatilityPercent = (volatilityRange / startValue) * 100;
-
-    // Get rebalancing recommendations (stub for now)
-    const rebalanceResult = rebalance(path, targetMix);
-
-    // Enhanced recommendations based on analysis
-    const enhancedRecommendations = [
-      ...rebalanceResult.recommendations,
-      `Portfolio grew from $${startValue.toFixed(2)} to $${endValue.toFixed(2)} (${totalReturnPercent.toFixed(2)}%)`,
-      volatilityPercent > 20
-        ? `High volatility detected (${volatilityPercent.toFixed(1)}% range). Consider rebalancing to reduce risk.`
-        : `Volatility within acceptable range (${volatilityPercent.toFixed(1)}%).`,
-    ];
+    // Run simulation
+    const result = simulatePortfolio({
+      ...params,
+      mix,
+      seed,
+    });
 
     res.json({
       success: true,
-      rebalance: {
-        rebalanceNeeded: rebalanceResult.rebalanceNeeded || volatilityPercent > 20,
-        recommendations: enhancedRecommendations,
-        currentPath: path,
-        targetMix,
-        analysis: {
-          startValue,
-          endValue,
-          totalReturn: Math.round(totalReturn * 100) / 100,
-          totalReturnPercent: Math.round(totalReturnPercent * 100) / 100,
-          maxValue: Math.round(maxValue * 100) / 100,
-          minValue: Math.round(minValue * 100) / 100,
-          volatilityRange: Math.round(volatilityRange * 100) / 100,
-          volatilityPercent: Math.round(volatilityPercent * 100) / 100,
-          pathLength: path.length,
-        },
+      path: result.monthly,
+      trades: result.trades,
+      stats: result.stats,
+      meta: {
+        profile,
+        mix,
+        seed,
+        disclaimer: 'For learning only — not financial advice.',
       },
     });
   } catch (error) {
-    console.error('Error in postRebalance:', error);
+    console.error('Error in postSimulate:', error);
+    next(error);
+  }
+}
+
+/**
+ * POST /api/investing/montecarlo
+ * Monte Carlo simulation with percentile bands and success probability
+ */
+export async function postMonteCarlo(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  try {
+    const validation = monteCarloBodySchema.safeParse(req.body);
+    if (!validation.success) {
+      throw createHttpError(400, 'Invalid request body', {
+        details: validation.error.issues,
+      });
+    }
+
+    const { profile, runs, targetAmount, ...params } = validation.data;
+    const playerId = req.headers['x-player-id'] as string || 'anonymous';
+    
+    // Generate seed if not provided
+    const seed = params.seed || `${playerId}:${profile}:${params.years}:mc`;
+    
+    // Get portfolio mix from profile
+    const mix = PORTFOLIO_PROFILES[profile];
+
+    // Run Monte Carlo
+    const result = monteCarlo({
+      ...params,
+      mix,
+      seed,
+      runs,
+      targetAmount,
+    });
+
+    res.json({
+      success: true,
+      bands: result.bands,
+      successProb: result.successProb,
+      meta: {
+        profile,
+        mix,
+        runs,
+        targetAmount,
+        seed,
+        disclaimer: 'For learning only — not financial advice.',
+      },
+    });
+  } catch (error) {
+    console.error('Error in postMonteCarlo:', error);
     next(error);
   }
 }

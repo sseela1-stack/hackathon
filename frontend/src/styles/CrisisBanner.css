@@ -1,0 +1,184 @@
+/**
+ * Crisis Banner Styles
+ * Non-modal callout with high visibility and clear action steps
+ */
+
+.crisis-banner {
+  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+  border-radius: 12px;
+  padding: 20px 24px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
+  color: white;
+  animation: slideDown 0.4s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.crisis-banner__header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.crisis-banner__icon {
+  font-size: 32px;
+  line-height: 1;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+.crisis-banner__title {
+  font-size: 20px;
+  font-weight: bold;
+  margin: 0;
+  color: white;
+}
+
+.crisis-banner__message {
+  font-size: 15px;
+  line-height: 1.5;
+  margin: 0 0 16px 0;
+  opacity: 0.95;
+}
+
+.crisis-banner__steps {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 16px;
+  backdrop-filter: blur(10px);
+}
+
+.crisis-banner__steps-title {
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0 0 12px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: white;
+}
+
+.crisis-banner__list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.crisis-banner__step {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.crisis-banner__step-number {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  background: white;
+  color: #ff6b6b;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 13px;
+}
+
+.crisis-banner__step-text {
+  flex: 1;
+  padding-top: 2px;
+}
+
+.crisis-banner__dismiss {
+  width: 100%;
+  padding: 12px;
+  background: white;
+  color: #ff6b6b;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.crisis-banner__dismiss:hover {
+  background: #fff;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.crisis-banner__dismiss:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.crisis-banner__dismiss:focus {
+  outline: 2px solid white;
+  outline-offset: 2px;
+}
+
+/* Mobile optimizations */
+@media (max-width: 768px) {
+  .crisis-banner {
+    padding: 16px 18px;
+    margin-bottom: 16px;
+  }
+
+  .crisis-banner__icon {
+    font-size: 28px;
+  }
+
+  .crisis-banner__title {
+    font-size: 18px;
+  }
+
+  .crisis-banner__message {
+    font-size: 14px;
+  }
+
+  .crisis-banner__step {
+    font-size: 13px;
+  }
+
+  .crisis-banner__dismiss {
+    font-size: 14px;
+    padding: 10px;
+  }
+}
+
+/* Accessibility: Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .crisis-banner {
+    animation: none;
+  }
+
+  .crisis-banner__icon {
+    animation: none;
+  }
+}

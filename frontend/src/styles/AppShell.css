@@ -1,0 +1,35 @@
+/* AppShell Layout Styles */
+.app-shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+  min-height: 100svh;
+  width: 100%;
+}
+
+.app-shell__header {
+  flex-shrink: 0;
+  width: 100%;
+  z-index: 100;
+}
+
+.app-shell__main {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  width: 100%;
+  padding: var(--gap);
+}
+
+.app-shell__footer {
+  flex-shrink: 0;
+  width: 100%;
+  z-index: 100;
+}
+
+/* Stack utility for vertical layouts with consistent gaps */
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap);
+}

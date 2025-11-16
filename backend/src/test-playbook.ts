@@ -156,9 +156,12 @@ function createBaseState(overrides?: Partial<GameState>): GameState {
     },
     health: 50,
     mood: 'okay',
+    monthsPlayed: 0,
+    netWorth: 1500,
     unlocked: {
       investingDistrict: false,
     },
+    achievements: [],
     history: [],
     ...overrides,
   };
