@@ -1,0 +1,266 @@
+/* Simulation Setup Styles - Optimized for S23 Ultra (411x749) */
+
+.simulation-setup {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  overflow-y: auto;
+}
+
+.simulation-setup-container {
+  background: white;
+  border-radius: 16px;
+  padding: 1.5rem;
+  max-width: 100%;
+  width: 100%;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  animation: slideUp 0.4s ease-out;
+}
+
+@media (min-width: 412px) {
+  .simulation-setup-container {
+    padding: 2rem;
+    max-width: 500px;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.simulation-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #2c3e50;
+  margin: 0 0 0.5rem 0;
+  text-align: center;
+}
+
+.simulation-subtitle {
+  font-size: 0.95rem;
+  color: #7f8c8d;
+  margin: 0 0 2rem 0;
+  text-align: center;
+  line-height: 1.4;
+}
+
+.simulation-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.form-label {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #34495e;
+}
+
+.days-input {
+  width: 100%;
+  padding: 0.875rem;
+  font-size: 1.125rem;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  transition: all 0.2s;
+  font-family: inherit;
+  text-align: center;
+  font-weight: 600;
+  -webkit-appearance: none;
+  -moz-appearance: textfield;
+}
+
+.days-input::-webkit-inner-spin-button,
+.days-input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.days-input:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.error-message {
+  color: #e74c3c;
+  font-size: 0.875rem;
+  font-weight: 500;
+  padding: 0.5rem;
+  background: #fee;
+  border-radius: 6px;
+  border-left: 3px solid #e74c3c;
+}
+
+.preset-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.preset-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #7f8c8d;
+  margin: 0;
+}
+
+.preset-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
+  gap: 0.625rem;
+}
+
+.preset-button {
+  padding: 0.75rem 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  border: 2px solid #e0e0e0;
+  background: white;
+  color: #34495e;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+  white-space: nowrap;
+}
+
+.preset-button:hover {
+  border-color: #667eea;
+  background: #f8f9ff;
+}
+
+.preset-button.active {
+  background: #667eea;
+  color: white;
+  border-color: #667eea;
+}
+
+.preset-button:active {
+  transform: scale(0.97);
+}
+
+.info-box {
+  background: #f8f9fa;
+  padding: 1rem;
+  border-radius: 8px;
+  border-left: 4px solid #667eea;
+}
+
+.info-box h3 {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #34495e;
+  margin: 0 0 0.75rem 0;
+}
+
+.info-box ul {
+  margin: 0;
+  padding-left: 1.25rem;
+  list-style: none;
+}
+
+.info-box li {
+  font-size: 0.875rem;
+  color: #5a6c7d;
+  margin-bottom: 0.5rem;
+  line-height: 1.4;
+  position: relative;
+}
+
+.info-box li::before {
+  content: "✓";
+  position: absolute;
+  left: -1.25rem;
+  color: #667eea;
+  font-weight: bold;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.back-button,
+.start-button {
+  flex: 1;
+  padding: 0.875rem 1.25rem;
+  font-size: 1rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+  min-height: 48px; /* Touch-friendly for mobile */
+}
+
+.back-button {
+  background: #ecf0f1;
+  color: #34495e;
+}
+
+.back-button:hover {
+  background: #d5dbdb;
+}
+
+.start-button {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.start-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+}
+
+.start-button:active,
+.back-button:active {
+  transform: scale(0.98);
+}
+
+/* Responsive adjustments for smaller screens */
+@media (max-width: 411px) {
+  .simulation-setup {
+    padding: 0.5rem;
+  }
+
+  .simulation-setup-container {
+    padding: 1.25rem;
+  }
+
+  .simulation-title {
+    font-size: 1.5rem;
+  }
+
+  .preset-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .action-buttons {
+    flex-direction: column;
+  }
+
+  .back-button,
+  .start-button {
+    width: 100%;
+  }
+}

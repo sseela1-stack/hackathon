@@ -1,0 +1,21 @@
+{
+  "id": "scn_11ff4d66e8",
+  "name": "Urgent Care Visit",
+  "type": "expense",
+  "tags": [
+    "healthcare",
+    "emergency"
+  ],
+  "description": "Urgent Care Visit unexpected expense.",
+  "amount": {
+    "dist": "lognormal",
+    "mean": 180,
+    "sigma": 120,
+    "min": 50
+  },
+  "base_daily_prob": 0.006,
+  "deterministic": false,
+  "schedule": null,
+  "cooldown_days": 30,
+  "triggers": []
+}

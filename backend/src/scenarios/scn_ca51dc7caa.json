@@ -1,0 +1,20 @@
+{
+  "id": "scn_ca51dc7caa",
+  "name": "Medication Refill",
+  "type": "expense",
+  "tags": [
+    "healthcare"
+  ],
+  "description": "Medication Refill health/wellness expense.",
+  "amount": {
+    "dist": "lognormal",
+    "mean": 35,
+    "sigma": 20,
+    "min": 10
+  },
+  "base_daily_prob": 0.03,
+  "deterministic": false,
+  "schedule": null,
+  "cooldown_days": 25,
+  "triggers": []
+}

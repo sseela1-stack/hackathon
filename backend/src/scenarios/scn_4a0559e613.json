@@ -1,0 +1,22 @@
+{
+  "id": "scn_4a0559e613",
+  "name": "Library Late Fee",
+  "type": "expense",
+  "tags": [
+    "fees"
+  ],
+  "description": "Library Late Fee.",
+  "amount": {
+    "dist": "choice",
+    "options": [
+      5,
+      10,
+      15
+    ]
+  },
+  "base_daily_prob": 0.01,
+  "deterministic": false,
+  "schedule": null,
+  "cooldown_days": 14,
+  "triggers": []
+}

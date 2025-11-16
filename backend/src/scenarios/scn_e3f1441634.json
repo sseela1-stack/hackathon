@@ -1,0 +1,25 @@
+{
+  "id": "scn_e3f1441634",
+  "name": "Daycare / Childcare",
+  "type": "bill",
+  "tags": [
+    "childcare",
+    "recurring"
+  ],
+  "description": "Recurring monthly bill: Daycare / Childcare.",
+  "amount": {
+    "dist": "lognormal",
+    "mean": 750,
+    "sigma": 150.0,
+    "min": 375.0
+  },
+  "base_daily_prob": 0.0,
+  "deterministic": true,
+  "schedule": {
+    "type": "every_n_days",
+    "n": 30,
+    "offset": 24
+  },
+  "cooldown_days": 0,
+  "triggers": []
+}

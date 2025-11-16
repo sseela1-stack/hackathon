@@ -1,0 +1,21 @@
+{
+  "id": "scn_086c3c32cc",
+  "name": "Car Repair",
+  "type": "expense",
+  "tags": [
+    "car",
+    "emergency"
+  ],
+  "description": "Car Repair unexpected expense.",
+  "amount": {
+    "dist": "lognormal",
+    "mean": 450,
+    "sigma": 250,
+    "min": 150
+  },
+  "base_daily_prob": 0.006,
+  "deterministic": false,
+  "schedule": null,
+  "cooldown_days": 60,
+  "triggers": []
+}

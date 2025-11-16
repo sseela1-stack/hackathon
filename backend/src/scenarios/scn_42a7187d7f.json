@@ -1,0 +1,21 @@
+{
+  "id": "scn_42a7187d7f",
+  "name": "Host Dinner at Home",
+  "type": "expense",
+  "tags": [
+    "leisure",
+    "social"
+  ],
+  "description": "Host Dinner at Home.",
+  "amount": {
+    "dist": "lognormal",
+    "mean": 85,
+    "sigma": 50,
+    "min": 25
+  },
+  "base_daily_prob": 0.01,
+  "deterministic": false,
+  "schedule": null,
+  "cooldown_days": 20,
+  "triggers": []
+}

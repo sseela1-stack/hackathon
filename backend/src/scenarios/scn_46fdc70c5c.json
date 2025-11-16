@@ -1,0 +1,22 @@
+{
+  "id": "scn_46fdc70c5c",
+  "name": "Streaming Movie Rental",
+  "type": "expense",
+  "tags": [
+    "entertainment",
+    "leisure"
+  ],
+  "description": "Streaming Movie Rental discretionary spend.",
+  "amount": {
+    "dist": "choice",
+    "options": [
+      4,
+      6
+    ]
+  },
+  "base_daily_prob": 0.06,
+  "deterministic": false,
+  "schedule": null,
+  "cooldown_days": 1,
+  "triggers": []
+}

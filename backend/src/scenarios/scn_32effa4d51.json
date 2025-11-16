@@ -1,0 +1,20 @@
+{
+  "id": "scn_32effa4d51",
+  "name": "Phone Upgrade",
+  "type": "expense",
+  "tags": [
+    "electronics"
+  ],
+  "description": "Phone Upgrade large purchase.",
+  "amount": {
+    "dist": "lognormal",
+    "mean": 900,
+    "sigma": 300,
+    "min": 400
+  },
+  "base_daily_prob": 0.003,
+  "deterministic": false,
+  "schedule": null,
+  "cooldown_days": 365,
+  "triggers": []
+}

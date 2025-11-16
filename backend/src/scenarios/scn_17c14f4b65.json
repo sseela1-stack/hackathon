@@ -1,0 +1,23 @@
+{
+  "id": "scn_17c14f4b65",
+  "name": "Gym Day Pass",
+  "type": "expense",
+  "tags": [
+    "fitness",
+    "leisure"
+  ],
+  "description": "Gym Day Pass health/wellness expense.",
+  "amount": {
+    "dist": "choice",
+    "options": [
+      10,
+      15,
+      20
+    ]
+  },
+  "base_daily_prob": 0.03,
+  "deterministic": false,
+  "schedule": null,
+  "cooldown_days": 3,
+  "triggers": []
+}

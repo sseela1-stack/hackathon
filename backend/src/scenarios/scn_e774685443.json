@@ -1,0 +1,26 @@
+{
+  "id": "scn_e774685443",
+  "name": "Renter's Insurance",
+  "type": "bill",
+  "tags": [
+    "insurance",
+    "housing",
+    "recurring"
+  ],
+  "description": "Recurring monthly bill: Renter's Insurance.",
+  "amount": {
+    "dist": "lognormal",
+    "mean": 18,
+    "sigma": 3.6,
+    "min": 9.0
+  },
+  "base_daily_prob": 0.0,
+  "deterministic": true,
+  "schedule": {
+    "type": "every_n_days",
+    "n": 30,
+    "offset": 10
+  },
+  "cooldown_days": 0,
+  "triggers": []
+}

@@ -1,0 +1,20 @@
+{
+  "id": "saving_contribution",
+  "name": "Saving Plan Contribution",
+  "type": "expense",
+  "tags": [
+    "savings"
+  ],
+  "description": "Contribution toward an active saving pledge.",
+  "amount": {
+    "dist": "choice",
+    "options": [
+      0
+    ]
+  },
+  "base_daily_prob": 0.0,
+  "deterministic": false,
+  "schedule": null,
+  "cooldown_days": 0,
+  "triggers": []
+}

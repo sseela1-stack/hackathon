@@ -1,0 +1,24 @@
+{
+  "id": "scn_4d81632dfb",
+  "name": "Buy Lottery Ticket",
+  "type": "lottery",
+  "tags": [
+    "gambling"
+  ],
+  "description": "Purchase a lottery ticket.",
+  "amount": {
+    "dist": "fixed",
+    "value": 2
+  },
+  "base_daily_prob": 0.03,
+  "deterministic": false,
+  "schedule": null,
+  "cooldown_days": 0,
+  "triggers": [
+    {
+      "spawn": "lottery_result",
+      "after_days": 1,
+      "prob": 1.0
+    }
+  ]
+}

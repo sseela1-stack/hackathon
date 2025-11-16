@@ -1,0 +1,26 @@
+{
+  "id": "scn_af3d051bb3",
+  "name": "Gym Membership",
+  "type": "bill",
+  "tags": [
+    "subscriptions",
+    "fitness",
+    "recurring"
+  ],
+  "description": "Recurring monthly bill: Gym Membership.",
+  "amount": {
+    "dist": "lognormal",
+    "mean": 35,
+    "sigma": 7.0,
+    "min": 17.5
+  },
+  "base_daily_prob": 0.0,
+  "deterministic": true,
+  "schedule": {
+    "type": "every_n_days",
+    "n": 30,
+    "offset": 14
+  },
+  "cooldown_days": 0,
+  "triggers": []
+}

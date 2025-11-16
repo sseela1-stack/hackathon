@@ -1,0 +1,28 @@
+{
+  "id": "scn_2de8ad2965",
+  "name": "Save for Vacation",
+  "type": "saving_pledge",
+  "tags": [
+    "savings",
+    "travel"
+  ],
+  "description": "Save $1,200 for a trip in 120 days.",
+  "amount": {
+    "dist": "fixed",
+    "value": 1200
+  },
+  "base_daily_prob": 0.008,
+  "deterministic": false,
+  "schedule": null,
+  "cooldown_days": 45,
+  "triggers": [
+    {
+      "spawn": "saving_contribution",
+      "after_days": 1,
+      "prob": 1.0,
+      "data": {
+        "frequency": "weekly"
+      }
+    }
+  ]
+}

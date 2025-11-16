@@ -1,0 +1,20 @@
+{
+  "id": "scn_94a5d701d9",
+  "name": "Lunch Out",
+  "type": "expense",
+  "tags": [
+    "dining",
+    "leisure"
+  ],
+  "description": "Lunch Out discretionary spend.",
+  "amount": {
+    "dist": "uniform",
+    "low": 9,
+    "high": 18
+  },
+  "base_daily_prob": 0.18,
+  "deterministic": false,
+  "schedule": null,
+  "cooldown_days": 0,
+  "triggers": []
+}

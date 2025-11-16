@@ -1,0 +1,26 @@
+{
+  "id": "scn_98975b1c27",
+  "name": "Health Insurance Premium",
+  "type": "bill",
+  "tags": [
+    "insurance",
+    "healthcare",
+    "recurring"
+  ],
+  "description": "Recurring monthly bill: Health Insurance Premium.",
+  "amount": {
+    "dist": "lognormal",
+    "mean": 350,
+    "sigma": 70.0,
+    "min": 175.0
+  },
+  "base_daily_prob": 0.0,
+  "deterministic": true,
+  "schedule": {
+    "type": "every_n_days",
+    "n": 30,
+    "offset": 9
+  },
+  "cooldown_days": 0,
+  "triggers": []
+}

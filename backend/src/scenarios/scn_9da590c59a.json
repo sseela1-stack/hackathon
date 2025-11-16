@@ -1,0 +1,26 @@
+{
+  "id": "scn_9da590c59a",
+  "name": "Car Insurance",
+  "type": "bill",
+  "tags": [
+    "insurance",
+    "car",
+    "recurring"
+  ],
+  "description": "Recurring monthly bill: Car Insurance.",
+  "amount": {
+    "dist": "lognormal",
+    "mean": 120,
+    "sigma": 24.0,
+    "min": 60.0
+  },
+  "base_daily_prob": 0.0,
+  "deterministic": true,
+  "schedule": {
+    "type": "every_n_days",
+    "n": 30,
+    "offset": 8
+  },
+  "cooldown_days": 0,
+  "triggers": []
+}

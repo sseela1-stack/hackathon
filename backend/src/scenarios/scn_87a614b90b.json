@@ -1,0 +1,20 @@
+{
+  "id": "scn_87a614b90b",
+  "name": "Crypto Purchase",
+  "type": "expense",
+  "tags": [
+    "investment"
+  ],
+  "description": "Crypto Purchase discretionary outflow.",
+  "amount": {
+    "dist": "lognormal",
+    "mean": 150,
+    "sigma": 120,
+    "min": 20
+  },
+  "base_daily_prob": 0.015,
+  "deterministic": false,
+  "schedule": null,
+  "cooldown_days": 3,
+  "triggers": []
+}

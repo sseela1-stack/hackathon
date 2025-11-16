@@ -1,0 +1,21 @@
+{
+  "id": "scn_93f431f4fb",
+  "name": "Performance Bonus",
+  "type": "income",
+  "tags": [
+    "bonus",
+    "windfall"
+  ],
+  "description": "Performance Bonus received.",
+  "amount": {
+    "dist": "lognormal",
+    "mean": 1500,
+    "sigma": 700,
+    "min": 400
+  },
+  "base_daily_prob": 0.002,
+  "deterministic": false,
+  "schedule": null,
+  "cooldown_days": 180,
+  "triggers": []
+}

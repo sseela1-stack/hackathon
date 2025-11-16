@@ -1,0 +1,106 @@
+{"id": "scn_83bb168d83", "name": "Paycheck", "type": "income", "tags": ["salary", "recurring"]}
+{"id": "scn_5c2d81dc98", "name": "Rent", "type": "bill", "tags": ["rent", "housing", "recurring"]}
+{"id": "scn_a622d9ef3a", "name": "Mortgage", "type": "bill", "tags": ["mortgage", "housing", "recurring"]}
+{"id": "scn_20645ada17", "name": "Electricity Bill", "type": "bill", "tags": ["utilities", "recurring"]}
+{"id": "scn_8d4067fe31", "name": "Water Bill", "type": "bill", "tags": ["utilities", "recurring"]}
+{"id": "scn_497316eee8", "name": "Gas Utility", "type": "bill", "tags": ["utilities", "recurring"]}
+{"id": "scn_9db5a8b2ad", "name": "Internet Plan", "type": "bill", "tags": ["internet", "utilities", "recurring"]}
+{"id": "scn_911b21c02e", "name": "Mobile Phone Plan", "type": "bill", "tags": ["mobile", "utilities", "recurring"]}
+{"id": "scn_9da590c59a", "name": "Car Insurance", "type": "bill", "tags": ["insurance", "car", "recurring"]}
+{"id": "scn_98975b1c27", "name": "Health Insurance Premium", "type": "bill", "tags": ["insurance", "healthcare", "recurring"]}
+{"id": "scn_e774685443", "name": "Renter's Insurance", "type": "bill", "tags": ["insurance", "housing", "recurring"]}
+{"id": "scn_3689fc1dd5", "name": "Homeowner's Insurance", "type": "bill", "tags": ["insurance", "housing", "recurring"]}
+{"id": "scn_93e372d311", "name": "Public Transit Pass", "type": "bill", "tags": ["public_transit", "transport", "recurring"]}
+{"id": "scn_8efa3cf4de", "name": "Parking Permit", "type": "bill", "tags": ["car", "transport", "recurring"]}
+{"id": "scn_af3d051bb3", "name": "Gym Membership", "type": "bill", "tags": ["subscriptions", "fitness", "recurring"]}
+{"id": "scn_ea4d4460a3", "name": "Cloud Storage 2TB", "type": "bill", "tags": ["subscriptions", "recurring"]}
+{"id": "scn_a45e0a9a39", "name": "Productivity Software", "type": "bill", "tags": ["subscriptions", "recurring"]}
+{"id": "scn_99a1b930ad", "name": "VPN Subscription", "type": "bill", "tags": ["subscriptions", "recurring"]}
+{"id": "scn_fa7c2c9973", "name": "News Subscription", "type": "bill", "tags": ["subscriptions", "recurring"]}
+{"id": "scn_b04625dd0c", "name": "Streaming Video", "type": "bill", "tags": ["subscriptions", "entertainment", "recurring"]}
+{"id": "scn_3471dcc760", "name": "Music Streaming", "type": "bill", "tags": ["subscriptions", "entertainment", "recurring"]}
+{"id": "scn_582a5e755f", "name": "Coding Platform Pro", "type": "bill", "tags": ["subscriptions", "education", "recurring"]}
+{"id": "scn_d14c8ddd33", "name": "Credit Card Minimum Payment", "type": "bill", "tags": ["debt", "recurring"]}
+{"id": "scn_7cf10aa1c1", "name": "Student Loan Payment", "type": "bill", "tags": ["debt", "student_loan", "recurring"]}
+{"id": "scn_e3f1441634", "name": "Daycare / Childcare", "type": "bill", "tags": ["childcare", "recurring"]}
+{"id": "scn_cd8d3178e7", "name": "Storage Unit", "type": "bill", "tags": ["housing", "fees", "recurring"]}
+{"id": "scn_177d053a40", "name": "Groceries", "type": "expense", "tags": ["groceries", "recurring"]}
+{"id": "scn_d640f42fe7", "name": "Fuel Refill", "type": "expense", "tags": ["fuel", "car", "transport", "recurring"]}
+{"id": "scn_474c83dc96", "name": "Coffee Shop", "type": "expense", "tags": ["dining", "leisure", "convenience"]}
+{"id": "scn_94a5d701d9", "name": "Lunch Out", "type": "expense", "tags": ["dining", "leisure"]}
+{"id": "scn_41b770405f", "name": "Dinner Out", "type": "expense", "tags": ["dining", "leisure"]}
+{"id": "scn_35f8d2f776", "name": "Ride-share Trip", "type": "expense", "tags": ["transport", "convenience"]}
+{"id": "scn_5456a3b660", "name": "Movie Night", "type": "expense", "tags": ["entertainment", "leisure"]}
+{"id": "scn_46fdc70c5c", "name": "Streaming Movie Rental", "type": "expense", "tags": ["entertainment", "leisure"]}
+{"id": "scn_4f16cb05b0", "name": "Clothes Shopping", "type": "expense", "tags": ["shopping", "clothes"]}
+{"id": "scn_8d5b9e8452", "name": "Shoe Shopping", "type": "expense", "tags": ["shopping", "clothes"]}
+{"id": "scn_d01672284e", "name": "Electronics Accessory", "type": "expense", "tags": ["shopping", "electronics"]}
+{"id": "scn_d235b0ca15", "name": "Concert Ticket", "type": "expense", "tags": ["entertainment", "leisure", "social"]}
+{"id": "scn_2e58d68c7b", "name": "Sports Event", "type": "expense", "tags": ["entertainment", "sports", "social"]}
+{"id": "scn_1eb2470fd3", "name": "Bar / Night Out", "type": "expense", "tags": ["leisure", "social", "alcohol"]}
+{"id": "scn_bbfb64e86a", "name": "Home Cleaning Service", "type": "expense", "tags": ["convenience"]}
+{"id": "scn_f8cf9ae42d", "name": "Parking Ticket", "type": "expense", "tags": ["fines", "fees"]}
+{"id": "scn_4ec120bfcb", "name": "Speeding Ticket", "type": "expense", "tags": ["fines", "fees"]}
+{"id": "scn_086c3c32cc", "name": "Car Repair", "type": "expense", "tags": ["car", "emergency"]}
+{"id": "scn_498ee90861", "name": "Home Repair", "type": "expense", "tags": ["home_improvement", "emergency"]}
+{"id": "scn_11ff4d66e8", "name": "Urgent Care Visit", "type": "expense", "tags": ["healthcare", "emergency"]}
+{"id": "scn_245c8f0a4b", "name": "Vet Emergency", "type": "expense", "tags": ["pet", "emergency"]}
+{"id": "scn_91dec980aa", "name": "Overdraft Fee", "type": "expense", "tags": ["fees"]}
+{"id": "scn_f40aba8cfa", "name": "Bank Account Fee", "type": "expense", "tags": ["fees"]}
+{"id": "scn_601415de4a", "name": "Credit Card Late Fee", "type": "expense", "tags": ["fees", "debt"]}
+{"id": "scn_5b2b29934e", "name": "Charity Donation", "type": "donation", "tags": ["donation"]}
+{"id": "scn_1c9727e809", "name": "Crowdfunding Support", "type": "donation", "tags": ["donation", "social"]}
+{"id": "scn_d3403acaa6", "name": "Birthday Gift for Friend", "type": "expense", "tags": ["gift", "social"]}
+{"id": "scn_b12fe0ea8e", "name": "Wedding Gift", "type": "expense", "tags": ["gift", "social"]}
+{"id": "scn_153dc76cac", "name": "Holiday Gifts Shopping", "type": "expense", "tags": ["gift", "holiday"]}
+{"id": "scn_b65becb0ae", "name": "Side Gig Payout", "type": "income", "tags": ["gig_income"]}
+{"id": "scn_eafdbeb6bf", "name": "Freelance Invoice Paid", "type": "income", "tags": ["freelance_income"]}
+{"id": "scn_7aa5d14948", "name": "Cash Gift from Family", "type": "income", "tags": ["windfall"]}
+{"id": "scn_cb135ba9b4", "name": "Money from Friend", "type": "income", "tags": ["windfall", "social"]}
+{"id": "scn_e399a22f1e", "name": "Tax Refund", "type": "income", "tags": ["tax", "windfall"]}
+{"id": "scn_93f431f4fb", "name": "Performance Bonus", "type": "income", "tags": ["bonus", "windfall"]}
+{"id": "scn_46e19109f0", "name": "Dividend Income", "type": "income", "tags": ["investment_income", "investment"]}
+{"id": "scn_ddffd16dcc", "name": "Marketplace Sale", "type": "income", "tags": ["windfall"]}
+{"id": "scn_cf9871b04e", "name": "Stock Purchase", "type": "expense", "tags": ["investment"]}
+{"id": "scn_87a614b90b", "name": "Crypto Purchase", "type": "expense", "tags": ["investment"]}
+{"id": "scn_4d5eed2c65", "name": "Savings Transfer", "type": "expense", "tags": ["savings"]}
+{"id": "scn_9377ced84c", "name": "Extra Credit Card Payment", "type": "expense", "tags": ["debt"]}
+{"id": "scn_90bce32b15", "name": "Student Loan Extra Payment", "type": "expense", "tags": ["debt", "student_loan"]}
+{"id": "scn_4d81632dfb", "name": "Buy Lottery Ticket", "type": "lottery", "tags": ["gambling"]}
+{"id": "lottery_result", "name": "Lottery Result", "type": "income", "tags": ["gambling", "windfall"]}
+{"id": "scn_607c15224f", "name": "Start Emergency Fund Pledge", "type": "saving_pledge", "tags": ["savings"]}
+{"id": "scn_2de8ad2965", "name": "Save for Vacation", "type": "saving_pledge", "tags": ["savings", "travel"]}
+{"id": "scn_d75db10c6e", "name": "Save for New Laptop", "type": "saving_pledge", "tags": ["savings", "electronics"]}
+{"id": "scn_7a30793aa4", "name": "Holiday Gifts Pledge", "type": "saving_pledge", "tags": ["savings", "holiday", "gift"]}
+{"id": "saving_contribution", "name": "Saving Plan Contribution", "type": "expense", "tags": ["savings"]}
+{"id": "scn_99644aafff", "name": "Weekend Getaway Booking", "type": "expense", "tags": ["travel", "leisure"]}
+{"id": "scn_a833ea936c", "name": "Flight Ticket Purchase", "type": "expense", "tags": ["travel"]}
+{"id": "scn_1c34797ed6", "name": "Hotel Booking", "type": "expense", "tags": ["travel"]}
+{"id": "scn_fced0f7491", "name": "Appliance Replacement", "type": "expense", "tags": ["home_improvement"]}
+{"id": "scn_08c0c0ccea", "name": "Furniture Purchase", "type": "expense", "tags": ["home_improvement"]}
+{"id": "scn_32effa4d51", "name": "Phone Upgrade", "type": "expense", "tags": ["electronics"]}
+{"id": "scn_94c4f587f7", "name": "Laptop Upgrade", "type": "expense", "tags": ["electronics"]}
+{"id": "scn_b8ca96edf2", "name": "Television Upgrade", "type": "expense", "tags": ["electronics"]}
+{"id": "scn_2efedb46d5", "name": "Course Enrollment Fee", "type": "expense", "tags": ["education"]}
+{"id": "scn_c4d373867d", "name": "Exam Fee", "type": "expense", "tags": ["education"]}
+{"id": "scn_9920cab542", "name": "Textbook Purchase", "type": "expense", "tags": ["education"]}
+{"id": "scn_3de9e1090a", "name": "Dental Cleaning Copay", "type": "expense", "tags": ["healthcare"]}
+{"id": "scn_ca51dc7caa", "name": "Medication Refill", "type": "expense", "tags": ["healthcare"]}
+{"id": "scn_82ca697338", "name": "New Glasses / Contacts", "type": "expense", "tags": ["healthcare"]}
+{"id": "scn_9557525c6e", "name": "Therapy Session Copay", "type": "expense", "tags": ["healthcare"]}
+{"id": "scn_17c14f4b65", "name": "Gym Day Pass", "type": "expense", "tags": ["fitness", "leisure"]}
+{"id": "scn_aba2140dac", "name": "Security Deposit", "type": "expense", "tags": ["housing"]}
+{"id": "scn_65d8068fa3", "name": "Moving Truck Rental", "type": "expense", "tags": ["housing", "fees"]}
+{"id": "scn_91c7de9ba8", "name": "Deposit Returned", "type": "income", "tags": ["windfall", "housing"]}
+{"id": "scn_b582579890", "name": "Driver License Renewal", "type": "expense", "tags": ["fees"]}
+{"id": "scn_a9d274aea6", "name": "Passport Fee", "type": "expense", "tags": ["fees"]}
+{"id": "scn_b5ffc89ca5", "name": "Tax Filing Service", "type": "expense", "tags": ["fees", "tax"]}
+{"id": "scn_4a0559e613", "name": "Library Late Fee", "type": "expense", "tags": ["fees"]}
+{"id": "scn_ba00392320", "name": "Return Item for Refund", "type": "income", "tags": ["refund"]}
+{"id": "scn_285fa6426a", "name": "Mail-in Rebate", "type": "income", "tags": ["rebate"]}
+{"id": "scn_58c6c1b0c9", "name": "Credit Card Cashback", "type": "income", "tags": ["cashback"]}
+{"id": "scn_42a7187d7f", "name": "Host Dinner at Home", "type": "expense", "tags": ["leisure", "social"]}
+{"id": "scn_bc61a5cc5d", "name": "Weekend Road Trip", "type": "expense", "tags": ["travel", "social"]}
+{"id": "scn_66c816302a", "name": "Join a Club / Association", "type": "expense", "tags": ["subscriptions", "social"]}
+{"id": "deferred_payment", "name": "Deferred Payment Due", "type": "bill", "tags": ["fees", "debt"]}
+{"id": "late_fee_generic", "name": "Late Fee", "type": "expense", "tags": ["fees"]}

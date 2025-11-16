@@ -1,0 +1,20 @@
+{
+  "id": "scn_d3403acaa6",
+  "name": "Birthday Gift for Friend",
+  "type": "expense",
+  "tags": [
+    "gift",
+    "social"
+  ],
+  "description": "Birthday Gift for Friend discretionary outflow.",
+  "amount": {
+    "dist": "uniform",
+    "low": 20,
+    "high": 80
+  },
+  "base_daily_prob": 0.02,
+  "deterministic": false,
+  "schedule": null,
+  "cooldown_days": 20,
+  "triggers": []
+}

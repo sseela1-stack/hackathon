@@ -1,0 +1,27 @@
+{
+  "id": "scn_d640f42fe7",
+  "name": "Fuel Refill",
+  "type": "expense",
+  "tags": [
+    "fuel",
+    "car",
+    "transport",
+    "recurring"
+  ],
+  "description": "Regular weekly spend on fuel refill.",
+  "amount": {
+    "dist": "lognormal",
+    "mean": 50,
+    "sigma": 20.0,
+    "min": 10.0
+  },
+  "base_daily_prob": 0.0,
+  "deterministic": true,
+  "schedule": {
+    "type": "every_n_days",
+    "n": 7,
+    "offset": 2
+  },
+  "cooldown_days": 0,
+  "triggers": []
+}

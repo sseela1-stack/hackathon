@@ -1,0 +1,25 @@
+{
+  "id": "scn_20645ada17",
+  "name": "Electricity Bill",
+  "type": "bill",
+  "tags": [
+    "utilities",
+    "recurring"
+  ],
+  "description": "Recurring monthly bill: Electricity Bill.",
+  "amount": {
+    "dist": "lognormal",
+    "mean": 80,
+    "sigma": 16.0,
+    "min": 40.0
+  },
+  "base_daily_prob": 0.0,
+  "deterministic": true,
+  "schedule": {
+    "type": "every_n_days",
+    "n": 30,
+    "offset": 3
+  },
+  "cooldown_days": 0,
+  "triggers": []
+}

@@ -1,0 +1,22 @@
+{
+  "id": "scn_f40aba8cfa",
+  "name": "Bank Account Fee",
+  "type": "expense",
+  "tags": [
+    "fees"
+  ],
+  "description": "Bank Account Fee unexpected expense.",
+  "amount": {
+    "dist": "choice",
+    "options": [
+      5,
+      10,
+      15
+    ]
+  },
+  "base_daily_prob": 0.01,
+  "deterministic": false,
+  "schedule": null,
+  "cooldown_days": 10,
+  "triggers": []
+}

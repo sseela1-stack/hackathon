@@ -1,0 +1,18 @@
+{
+  "id": "scn_91dec980aa",
+  "name": "Overdraft Fee",
+  "type": "expense",
+  "tags": [
+    "fees"
+  ],
+  "description": "Overdraft Fee unexpected expense.",
+  "amount": {
+    "dist": "fixed",
+    "value": 35
+  },
+  "base_daily_prob": 0.005,
+  "deterministic": false,
+  "schedule": null,
+  "cooldown_days": 10,
+  "triggers": []
+}

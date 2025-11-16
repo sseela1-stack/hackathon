@@ -1,0 +1,21 @@
+{
+  "id": "scn_91c7de9ba8",
+  "name": "Deposit Returned",
+  "type": "income",
+  "tags": [
+    "windfall",
+    "housing"
+  ],
+  "description": "Deposit Returned.",
+  "amount": {
+    "dist": "lognormal",
+    "mean": 900,
+    "sigma": 350,
+    "min": 200
+  },
+  "base_daily_prob": 0.001,
+  "deterministic": false,
+  "schedule": null,
+  "cooldown_days": 365,
+  "triggers": []
+}

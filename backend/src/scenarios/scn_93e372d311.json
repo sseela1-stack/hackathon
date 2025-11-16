@@ -1,0 +1,26 @@
+{
+  "id": "scn_93e372d311",
+  "name": "Public Transit Pass",
+  "type": "bill",
+  "tags": [
+    "public_transit",
+    "transport",
+    "recurring"
+  ],
+  "description": "Recurring monthly bill: Public Transit Pass.",
+  "amount": {
+    "dist": "lognormal",
+    "mean": 90,
+    "sigma": 18.0,
+    "min": 45.0
+  },
+  "base_daily_prob": 0.0,
+  "deterministic": true,
+  "schedule": {
+    "type": "every_n_days",
+    "n": 30,
+    "offset": 12
+  },
+  "cooldown_days": 0,
+  "triggers": []
+}

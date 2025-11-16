@@ -1,0 +1,20 @@
+{
+  "id": "scn_b12fe0ea8e",
+  "name": "Wedding Gift",
+  "type": "expense",
+  "tags": [
+    "gift",
+    "social"
+  ],
+  "description": "Wedding Gift discretionary outflow.",
+  "amount": {
+    "dist": "uniform",
+    "low": 75,
+    "high": 200
+  },
+  "base_daily_prob": 0.006,
+  "deterministic": false,
+  "schedule": null,
+  "cooldown_days": 90,
+  "triggers": []
+}

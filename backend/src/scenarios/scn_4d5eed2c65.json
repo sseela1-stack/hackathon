@@ -1,0 +1,18 @@
+{
+  "id": "scn_4d5eed2c65",
+  "name": "Savings Transfer",
+  "type": "expense",
+  "tags": [
+    "savings"
+  ],
+  "description": "Savings Transfer discretionary outflow.",
+  "amount": {
+    "dist": "percent_of_pay",
+    "pct": 0.1
+  },
+  "base_daily_prob": 0.03,
+  "deterministic": false,
+  "schedule": null,
+  "cooldown_days": 2,
+  "triggers": []
+}

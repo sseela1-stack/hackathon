@@ -1,0 +1,20 @@
+{
+  "id": "scn_41b770405f",
+  "name": "Dinner Out",
+  "type": "expense",
+  "tags": [
+    "dining",
+    "leisure"
+  ],
+  "description": "Dinner Out discretionary spend.",
+  "amount": {
+    "dist": "uniform",
+    "low": 15,
+    "high": 35
+  },
+  "base_daily_prob": 0.12,
+  "deterministic": false,
+  "schedule": null,
+  "cooldown_days": 1,
+  "triggers": []
+}

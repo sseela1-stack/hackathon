@@ -1,0 +1,20 @@
+{
+  "id": "scn_fced0f7491",
+  "name": "Appliance Replacement",
+  "type": "expense",
+  "tags": [
+    "home_improvement"
+  ],
+  "description": "Appliance Replacement large purchase.",
+  "amount": {
+    "dist": "lognormal",
+    "mean": 700,
+    "sigma": 450,
+    "min": 200
+  },
+  "base_daily_prob": 0.003,
+  "deterministic": false,
+  "schedule": null,
+  "cooldown_days": 180,
+  "triggers": []
+}

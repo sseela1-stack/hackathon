@@ -1,0 +1,21 @@
+{
+  "id": "scn_bc61a5cc5d",
+  "name": "Weekend Road Trip",
+  "type": "expense",
+  "tags": [
+    "travel",
+    "social"
+  ],
+  "description": "Weekend Road Trip.",
+  "amount": {
+    "dist": "lognormal",
+    "mean": 200,
+    "sigma": 120,
+    "min": 80
+  },
+  "base_daily_prob": 0.006,
+  "deterministic": false,
+  "schedule": null,
+  "cooldown_days": 30,
+  "triggers": []
+}

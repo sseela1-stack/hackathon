@@ -1,0 +1,21 @@
+{
+  "id": "scn_4f16cb05b0",
+  "name": "Clothes Shopping",
+  "type": "expense",
+  "tags": [
+    "shopping",
+    "clothes"
+  ],
+  "description": "Clothes Shopping discretionary spend.",
+  "amount": {
+    "dist": "lognormal",
+    "mean": 65,
+    "sigma": 50,
+    "min": 15
+  },
+  "base_daily_prob": 0.03,
+  "deterministic": false,
+  "schedule": null,
+  "cooldown_days": 7,
+  "triggers": []
+}

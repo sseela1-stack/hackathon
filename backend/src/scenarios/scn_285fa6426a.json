@@ -1,0 +1,22 @@
+{
+  "id": "scn_285fa6426a",
+  "name": "Mail-in Rebate",
+  "type": "income",
+  "tags": [
+    "rebate"
+  ],
+  "description": "Mail-in Rebate.",
+  "amount": {
+    "dist": "choice",
+    "options": [
+      10,
+      20,
+      50
+    ]
+  },
+  "base_daily_prob": 0.004,
+  "deterministic": false,
+  "schedule": null,
+  "cooldown_days": 120,
+  "triggers": []
+}

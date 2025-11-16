@@ -1,0 +1,25 @@
+{
+  "id": "scn_99a1b930ad",
+  "name": "VPN Subscription",
+  "type": "bill",
+  "tags": [
+    "subscriptions",
+    "recurring"
+  ],
+  "description": "Recurring monthly bill: VPN Subscription.",
+  "amount": {
+    "dist": "lognormal",
+    "mean": 8,
+    "sigma": 1.6,
+    "min": 5.0
+  },
+  "base_daily_prob": 0.0,
+  "deterministic": true,
+  "schedule": {
+    "type": "every_n_days",
+    "n": 30,
+    "offset": 17
+  },
+  "cooldown_days": 0,
+  "triggers": []
+}

@@ -1,0 +1,26 @@
+{
+  "id": "scn_5c2d81dc98",
+  "name": "Rent",
+  "type": "bill",
+  "tags": [
+    "rent",
+    "housing",
+    "recurring"
+  ],
+  "description": "Recurring monthly bill: Rent.",
+  "amount": {
+    "dist": "lognormal",
+    "mean": 1200,
+    "sigma": 240.0,
+    "min": 600.0
+  },
+  "base_daily_prob": 0.0,
+  "deterministic": true,
+  "schedule": {
+    "type": "every_n_days",
+    "n": 30,
+    "offset": 1
+  },
+  "cooldown_days": 0,
+  "triggers": []
+}

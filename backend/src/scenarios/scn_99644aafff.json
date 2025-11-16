@@ -1,0 +1,21 @@
+{
+  "id": "scn_99644aafff",
+  "name": "Weekend Getaway Booking",
+  "type": "expense",
+  "tags": [
+    "travel",
+    "leisure"
+  ],
+  "description": "Weekend Getaway Booking planned spend.",
+  "amount": {
+    "dist": "lognormal",
+    "mean": 350,
+    "sigma": 200,
+    "min": 120
+  },
+  "base_daily_prob": 0.006,
+  "deterministic": false,
+  "schedule": null,
+  "cooldown_days": 45,
+  "triggers": []
+}

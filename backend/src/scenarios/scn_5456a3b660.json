@@ -1,0 +1,20 @@
+{
+  "id": "scn_5456a3b660",
+  "name": "Movie Night",
+  "type": "expense",
+  "tags": [
+    "entertainment",
+    "leisure"
+  ],
+  "description": "Movie Night discretionary spend.",
+  "amount": {
+    "dist": "uniform",
+    "low": 12,
+    "high": 45
+  },
+  "base_daily_prob": 0.05,
+  "deterministic": false,
+  "schedule": null,
+  "cooldown_days": 3,
+  "triggers": []
+}

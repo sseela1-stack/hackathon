@@ -1,0 +1,20 @@
+{
+  "id": "scn_eafdbeb6bf",
+  "name": "Freelance Invoice Paid",
+  "type": "income",
+  "tags": [
+    "freelance_income"
+  ],
+  "description": "Freelance Invoice Paid received.",
+  "amount": {
+    "dist": "lognormal",
+    "mean": 600,
+    "sigma": 350,
+    "min": 150
+  },
+  "base_daily_prob": 0.02,
+  "deterministic": false,
+  "schedule": null,
+  "cooldown_days": 7,
+  "triggers": []
+}

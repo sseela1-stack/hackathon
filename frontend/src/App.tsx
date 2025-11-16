@@ -4,12 +4,16 @@ import SettingsPanel from './components/SettingsPanel';
 import { InstallPrompt } from './components/InstallPrompt';
 import { usePrefetchOnIdle } from './hooks/usePrefetch';
 import { ProfileCreation, Role, Difficulty } from './pages/ProfileCreation';
+import SimulationSetup from './pages/SimulationSetup';
+import SimulationGame from './pages/SimulationGame';
+import SimulationPlaybook from './pages/SimulationPlaybook';
 import './App.css';
 
 // Lazy load InvestingDistrict for code splitting
 const InvestingDistrict = lazy(() => import('./pages/InvestingDistrict'));
 
-type View = 'game' | 'investing' | 'settings';
+type View = 'game' | 'investing' | 'simulation' | 'settings';
+type SimulationState = 'setup' | 'playing' | 'playbook' | null;
 
 /**
  * Loading fallback for lazy-loaded routes
@@ -34,6 +38,9 @@ const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<View>('game');
   const [hasProfile, setHasProfile] = useState<boolean>(false);
   const [profileData, setProfileData] = useState<{ role: Role; difficulty: Difficulty; name: string } | null>(null);
+  const [simulationState, setSimulationState] = useState<SimulationState>(null);
+  const [simulationDays, setSimulationDays] = useState<number>(30);
+  const [playbookData, setPlaybookData] = useState<any>(null);
 
   // Check if profile exists in localStorage on mount
   useEffect(() => {
@@ -63,6 +70,29 @@ const App: React.FC = () => {
     return <ProfileCreation onComplete={handleProfileComplete} />;
   }
 
+  const handleSimulationStart = (days: number) => {
+    setSimulationDays(days);
+    setSimulationState('playing');
+  };
+
+  const handleSimulationComplete = (playbook: any) => {
+    setPlaybookData(playbook);
+    setSimulationState('playbook');
+  };
+
+  const handleSimulationBack = () => {
+    setSimulationState('setup');
+  };
+
+  const handlePlaybookClose = () => {
+    setSimulationState(null);
+    setCurrentView('game');
+  };
+
+  const handlePlaybookRestart = () => {
+    setSimulationState('setup');
+  };
+
   const renderView = () => {
     switch (currentView) {
       case 'game':
@@ -73,6 +103,35 @@ const App: React.FC = () => {
             <InvestingDistrict />
           </Suspense>
         );
+      case 'simulation':
+        if (simulationState === 'setup' || simulationState === null) {
+          return (
+            <SimulationSetup
+              onStart={handleSimulationStart}
+              onBack={() => {
+                setSimulationState(null);
+                setCurrentView('game');
+              }}
+            />
+          );
+        } else if (simulationState === 'playing') {
+          return (
+            <SimulationGame
+              totalDays={simulationDays}
+              onComplete={handleSimulationComplete}
+              onBack={handleSimulationBack}
+            />
+          );
+        } else if (simulationState === 'playbook' && playbookData) {
+          return (
+            <SimulationPlaybook
+              data={playbookData}
+              onClose={handlePlaybookClose}
+              onRestart={handlePlaybookRestart}
+            />
+          );
+        }
+        return <SimulationSetup onStart={handleSimulationStart} onBack={() => setCurrentView('game')} />;
       case 'settings':
         return <SettingsPanel onClose={() => setCurrentView('game')} />;
       default:
@@ -92,9 +151,25 @@ const App: React.FC = () => {
               backgroundColor: currentView === 'game' ? '#2196F3' : '#f0f0f0',
               color: currentView === 'game' ? 'white' : '#333',
             }}
-            onClick={() => setCurrentView('game')}
+            onClick={() => {
+              setCurrentView('game');
+              setSimulationState(null);
+            }}
           >
             🎮 Game
+          </button>
+          <button
+            className="app-nav-button"
+            style={{
+              backgroundColor: currentView === 'simulation' ? '#FF6B6B' : '#f0f0f0',
+              color: currentView === 'simulation' ? 'white' : '#333',
+            }}
+            onClick={() => {
+              setCurrentView('simulation');
+              setSimulationState('setup');
+            }}
+          >
+            🎯 Simulation
           </button>
           <button
             className="app-nav-button"
@@ -102,7 +177,10 @@ const App: React.FC = () => {
               backgroundColor: currentView === 'investing' ? '#4CAF50' : '#f0f0f0',
               color: currentView === 'investing' ? 'white' : '#333',
             }}
-            onClick={() => setCurrentView('investing')}
+            onClick={() => {
+              setCurrentView('investing');
+              setSimulationState(null);
+            }}
           >
             📈 Investing
           </button>

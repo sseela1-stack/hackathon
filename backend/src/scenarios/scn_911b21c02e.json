@@ -1,0 +1,26 @@
+{
+  "id": "scn_911b21c02e",
+  "name": "Mobile Phone Plan",
+  "type": "bill",
+  "tags": [
+    "mobile",
+    "utilities",
+    "recurring"
+  ],
+  "description": "Recurring monthly bill: Mobile Phone Plan.",
+  "amount": {
+    "dist": "lognormal",
+    "mean": 70,
+    "sigma": 14.0,
+    "min": 35.0
+  },
+  "base_daily_prob": 0.0,
+  "deterministic": true,
+  "schedule": {
+    "type": "every_n_days",
+    "n": 30,
+    "offset": 7
+  },
+  "cooldown_days": 0,
+  "triggers": []
+}

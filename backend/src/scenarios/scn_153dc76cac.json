@@ -1,0 +1,21 @@
+{
+  "id": "scn_153dc76cac",
+  "name": "Holiday Gifts Shopping",
+  "type": "expense",
+  "tags": [
+    "gift",
+    "holiday"
+  ],
+  "description": "Holiday Gifts Shopping discretionary outflow.",
+  "amount": {
+    "dist": "lognormal",
+    "mean": 300,
+    "sigma": 150,
+    "min": 50
+  },
+  "base_daily_prob": 0.003,
+  "deterministic": false,
+  "schedule": null,
+  "cooldown_days": 120,
+  "triggers": []
+}

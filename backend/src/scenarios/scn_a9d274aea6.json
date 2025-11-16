@@ -1,0 +1,22 @@
+{
+  "id": "scn_a9d274aea6",
+  "name": "Passport Fee",
+  "type": "expense",
+  "tags": [
+    "fees"
+  ],
+  "description": "Passport Fee.",
+  "amount": {
+    "dist": "choice",
+    "options": [
+      110,
+      140,
+      180
+    ]
+  },
+  "base_daily_prob": 0.0007,
+  "deterministic": false,
+  "schedule": null,
+  "cooldown_days": 365,
+  "triggers": []
+}

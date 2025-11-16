@@ -1,0 +1,23 @@
+{
+  "id": "scn_cb135ba9b4",
+  "name": "Money from Friend",
+  "type": "income",
+  "tags": [
+    "windfall",
+    "social"
+  ],
+  "description": "Money from Friend received.",
+  "amount": {
+    "dist": "choice",
+    "options": [
+      10,
+      20,
+      50
+    ]
+  },
+  "base_daily_prob": 0.02,
+  "deterministic": false,
+  "schedule": null,
+  "cooldown_days": 7,
+  "triggers": []
+}

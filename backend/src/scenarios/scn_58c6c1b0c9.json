@@ -1,0 +1,22 @@
+{
+  "id": "scn_58c6c1b0c9",
+  "name": "Credit Card Cashback",
+  "type": "income",
+  "tags": [
+    "cashback"
+  ],
+  "description": "Credit Card Cashback.",
+  "amount": {
+    "dist": "choice",
+    "options": [
+      5,
+      10,
+      25
+    ]
+  },
+  "base_daily_prob": 0.05,
+  "deterministic": false,
+  "schedule": null,
+  "cooldown_days": 14,
+  "triggers": []
+}

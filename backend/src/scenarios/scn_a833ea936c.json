@@ -1,0 +1,20 @@
+{
+  "id": "scn_a833ea936c",
+  "name": "Flight Ticket Purchase",
+  "type": "expense",
+  "tags": [
+    "travel"
+  ],
+  "description": "Flight Ticket Purchase planned spend.",
+  "amount": {
+    "dist": "lognormal",
+    "mean": 420,
+    "sigma": 250,
+    "min": 150
+  },
+  "base_daily_prob": 0.004,
+  "deterministic": false,
+  "schedule": null,
+  "cooldown_days": 60,
+  "triggers": []
+}

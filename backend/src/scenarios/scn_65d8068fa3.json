@@ -1,0 +1,21 @@
+{
+  "id": "scn_65d8068fa3",
+  "name": "Moving Truck Rental",
+  "type": "expense",
+  "tags": [
+    "housing",
+    "fees"
+  ],
+  "description": "Moving Truck Rental.",
+  "amount": {
+    "dist": "lognormal",
+    "mean": 200,
+    "sigma": 120,
+    "min": 80
+  },
+  "base_daily_prob": 0.002,
+  "deterministic": false,
+  "schedule": null,
+  "cooldown_days": 365,
+  "triggers": []
+}

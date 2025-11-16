@@ -1,0 +1,21 @@
+{
+  "id": "scn_245c8f0a4b",
+  "name": "Vet Emergency",
+  "type": "expense",
+  "tags": [
+    "pet",
+    "emergency"
+  ],
+  "description": "Vet Emergency unexpected expense.",
+  "amount": {
+    "dist": "lognormal",
+    "mean": 350,
+    "sigma": 200,
+    "min": 100
+  },
+  "base_daily_prob": 0.003,
+  "deterministic": false,
+  "schedule": null,
+  "cooldown_days": 90,
+  "triggers": []
+}

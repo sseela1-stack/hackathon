@@ -1,0 +1,20 @@
+{
+  "id": "scn_bbfb64e86a",
+  "name": "Home Cleaning Service",
+  "type": "expense",
+  "tags": [
+    "convenience"
+  ],
+  "description": "Home Cleaning Service discretionary spend.",
+  "amount": {
+    "dist": "lognormal",
+    "mean": 120,
+    "sigma": 60,
+    "min": 60
+  },
+  "base_daily_prob": 0.01,
+  "deterministic": false,
+  "schedule": null,
+  "cooldown_days": 14,
+  "triggers": []
+}

@@ -1,0 +1,23 @@
+{
+  "id": "late_fee_generic",
+  "name": "Late Fee",
+  "type": "expense",
+  "tags": [
+    "fees"
+  ],
+  "description": "Generic late fee incurred by skipping or deferring obligations.",
+  "amount": {
+    "dist": "choice",
+    "options": [
+      15,
+      25,
+      35,
+      45
+    ]
+  },
+  "base_daily_prob": 0.0,
+  "deterministic": false,
+  "schedule": null,
+  "cooldown_days": 0,
+  "triggers": []
+}

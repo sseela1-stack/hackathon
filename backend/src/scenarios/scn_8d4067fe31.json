@@ -1,0 +1,25 @@
+{
+  "id": "scn_8d4067fe31",
+  "name": "Water Bill",
+  "type": "bill",
+  "tags": [
+    "utilities",
+    "recurring"
+  ],
+  "description": "Recurring monthly bill: Water Bill.",
+  "amount": {
+    "dist": "lognormal",
+    "mean": 40,
+    "sigma": 8.0,
+    "min": 20.0
+  },
+  "base_daily_prob": 0.0,
+  "deterministic": true,
+  "schedule": {
+    "type": "every_n_days",
+    "n": 30,
+    "offset": 4
+  },
+  "cooldown_days": 0,
+  "triggers": []
+}
