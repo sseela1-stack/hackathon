@@ -63,7 +63,7 @@ export default defineConfig({
           },
           // API requests: NetworkFirst with timeout, cache GET only
           {
-            urlPattern: /^http:\/\/localhost:3000\/api\/.*/i,
+            urlPattern: /^http:\/\/localhost:4000\/api\/.*/i,
             handler: 'NetworkFirst',
             method: 'GET',
             options: {
@@ -146,10 +146,10 @@ export default defineConfig({
     }),
   ],
   server: {
-    port: 3001,
+    port: 5173,
     proxy: {
       '/api': {
-        target: 'http://localhost:3000',
+        target: 'http://localhost:4000',
         changeOrigin: true,
       },
     },

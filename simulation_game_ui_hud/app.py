@@ -4,7 +4,6 @@ from pathlib import Path
 from typing import Dict
 
 from fastapi import FastAPI, HTTPException
-from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
@@ -22,16 +21,6 @@ except Exception:
     CATALOG = eng.build_default_catalog()
 
 app = FastAPI(title="Scenario Selection Game API")
-
-# Configure CORS
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["http://localhost:3001", "http://127.0.0.1:3001"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
 app.mount("/static", StaticFiles(directory=str(APP_DIR / "static")), name="static")
 
 class SessionState:
@@ -222,7 +211,3 @@ def get_state(session_id: str):
     state = SESSIONS.get(session_id)
     if not state: raise HTTPException(status_code=404, detail="Invalid session_id")
     return {"day": state.day, "balance": state.selector.balance, "history": state.selector.history[-100:], "hud": state.hud()}
-
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
