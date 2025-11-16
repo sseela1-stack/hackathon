@@ -52,38 +52,40 @@ const MoodSelector: React.FC<MoodSelectorProps> = ({ currentMood, onMoodChange }
 
 const styles: { [key: string]: React.CSSProperties } = {
   container: {
-    backgroundColor: '#fff',
-    padding: '15px',
-    borderRadius: '8px',
-    boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+    backgroundColor: 'transparent',
+    padding: '0',
+    borderRadius: '0',
+    boxShadow: 'none',
+    flex: 1,
   },
   heading: {
-    fontSize: '14px',
+    fontSize: '10px',
     fontWeight: 'bold',
-    marginBottom: '10px',
+    marginBottom: '4px',
     color: '#666',
+    textAlign: 'center',
   },
   moodsContainer: {
     display: 'flex',
-    gap: '10px',
+    gap: '4px',
     justifyContent: 'space-between',
   },
   moodButton: {
     flex: 1,
-    padding: '12px 8px',
-    borderRadius: '8px',
+    padding: '6px 4px',
+    borderRadius: '6px',
     cursor: 'pointer',
     transition: 'all 0.2s ease',
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
-    gap: '5px',
+    gap: '2px',
   },
   emoji: {
-    fontSize: '24px',
+    fontSize: '18px',
   },
   label: {
-    fontSize: '12px',
+    fontSize: '9px',
     fontWeight: '500',
   },
 };

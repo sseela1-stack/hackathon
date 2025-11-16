@@ -1,6 +1,6 @@
 import { AgentType } from '../types/game';
 
-const API_BASE_URL = 'http://localhost:4000/api';
+const API_BASE_URL = '/api';
 
 /**
  * Get or create a stable player ID stored in localStorage

@@ -172,6 +172,10 @@ body.high-contrast button {
   border: 2px solid #fff !important;
 }
 
+body.no-scroll-game {
+  overflow: hidden;
+}
+
 /* Accessibility: Font Sizes */
 body.font-normal {
   font-size: 16px;

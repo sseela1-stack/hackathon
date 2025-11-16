@@ -15,10 +15,10 @@
 
 .app-shell__main {
   flex: 1;
-  overflow-y: auto;
-  overflow-x: hidden;
+  overflow: hidden; /* No scrolling - cards handle their own overflow */
   width: 100%;
-  padding: var(--gap);
+  padding: 0; /* Remove padding - cards will handle their own */
+  position: relative;
 }
 
 .app-shell__footer {
@@ -31,5 +31,5 @@
 .stack {
   display: flex;
   flex-direction: column;
-  gap: var(--gap);
+  gap: 0; /* No gap - cards handle their own spacing */
 }

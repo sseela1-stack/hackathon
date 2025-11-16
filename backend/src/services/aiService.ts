@@ -487,7 +487,7 @@ export async function generateAgentReply(
   try {
     const response = await llm.chat(messages, {
       temperature: 0.7,
-      maxTokens: 200, // ~150 words max to enforce ≤120 word guideline
+      maxTokens: 800, // Increased for Gemini 2.5 Flash thinking tokens + output
     });
 
     return {

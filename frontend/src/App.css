@@ -26,7 +26,12 @@
 
 .app-main {
   min-height: calc(100vh - 70px);
+  min-height: calc(100svh - 70px);
+  min-height: calc(100dvh - 70px);
   margin-top: 70px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 /* S23 Ultra optimization - compact navigation */

@@ -15,6 +15,7 @@ import { QuestTracker } from '../components/flow/QuestTracker';
 import { FlowBeacons } from '../components/flow/FlowBeacons';
 import { ProgressPath } from '../components/flow/ProgressPath';
 import { ChatPanel } from '../components/ChatPanel';
+import { CardSwiper } from '../components/CardSwiper';
 import { getFlow, initializeFlow, complete as completeFlowStep } from '../flow/flowStore';
 import { shouldShowBeacon, detectMilestones, shouldUnlockInvesting } from '../flow/flowEngine';
 import { FlowState } from '../flow/flowTypes';
@@ -48,6 +49,8 @@ const GameScreen: React.FC<GameScreenProps> = ({ onInvestingUnlocked, profileDat
   const [newAchievement, setNewAchievement] = useState<string | null>(null);
   const [flow, setFlow] = useState<FlowState>(() => initializeFlow(0));
   const [showChat, setShowChat] = useState<boolean>(false);
+  const [mentorStatus, setMentorStatus] = useState<'ready' | 'offline'>('ready');
+  const [activeCard, setActiveCard] = useState<number>(0);
 
   // Prefetch InvestingDistrict when health >= 55 (unlock threshold)
   const shouldPrefetch = gameState?.health ? gameState.health >= 55 : false;
@@ -63,6 +66,11 @@ const GameScreen: React.FC<GameScreenProps> = ({ onInvestingUnlocked, profileDat
     if (savedFlow) {
       setFlow(savedFlow);
     }
+
+    document.body.classList.add('no-scroll-game');
+    return () => {
+      document.body.classList.remove('no-scroll-game');
+    };
   }, []);
 
   // Notify parent when investing unlocks
@@ -106,8 +114,12 @@ const GameScreen: React.FC<GameScreenProps> = ({ onInvestingUnlocked, profileDat
     try {
       const message = await getMentorMessage();
       setAgentMessage(message);
+      setMentorStatus('ready');
     } catch (err) {
       console.error('Failed to load mentor message:', err);
+      setMentorStatus('offline');
+      setAgentMessage('I\'m syncing with your latest choices. Open Mentor Chat for live help.');
+      showToast('Mentor chat is reconnecting. Tap Mentor Chat for live help.', 'info');
     }
   };
 
@@ -300,80 +312,151 @@ const GameScreen: React.FC<GameScreenProps> = ({ onInvestingUnlocked, profileDat
     );
   }
 
+  const cardTabs = [
+    { label: 'Scenario', icon: '💰' },
+    { label: 'Progress', icon: '🎯' },
+    { label: 'Mentor', icon: '🧙' },
+  ];
+
+  // Prepare cards for swiper
+  const cards = [
+    // Card 1: Main Game - Scenario & Choices
+    <div className={css.cardContent} key="main">
+      <header className={css.cardHeader}>
+        <h1 className={css.cardTitle}>💰 Scenario</h1>
+      </header>
+
+      <div className={css.scenarioContent}>
+        <div className={css.scenarioScrollArea}>
+          <div className={css.eventCard}>
+            <h2 className={css.eventTitle}>{gameState.lastScenario.title}</h2>
+            <p className={css.eventDescription}>{gameState.lastScenario.description}</p>
+            {gameState.lastScenario.amount > 0 && (
+              <p className={css.eventAmount}>${gameState.lastScenario.amount}</p>
+            )}
+          </div>
+
+          {gameState.uiHints?.showCrisisCoach && gameState.uiHints.crisisType && (
+            <CrisisBanner
+              crisisType={gameState.uiHints.crisisType}
+              onDismiss={handleDismissCrisis}
+            />
+          )}
+
+          {gameState.lastScenario.choices && gameState.lastScenario.choices.length > 0 ? (
+            <ChoicePanel
+              choices={gameState.lastScenario.choices}
+              onChoiceSelect={handleChoiceSelect}
+              disabled={isSubmittingChoice}
+            />
+          ) : (
+            <div className={`${css.placeholder} ${css.scenarioPlaceholder}`}>
+              <p>Choices are being generated...</p>
+              <button onClick={loadGameState} className={css.retryButton} disabled={isLoading}>
+                Generate New Scenario
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>,
+
+    // Card 2: Progress & Quests
+    <div className={css.cardContent} key="progress">
+      <header className={css.cardHeader}>
+        <h1 className={css.cardTitle}>🎯 Progress</h1>
+      </header>
+
+      <div className={css.progressContent}>
+        <ProgressPath flow={flow} investingUnlocked={shouldUnlockInvesting(gameState)} />
+
+        {flow.monthIndex === 0 && <QuestTracker flow={flow} />}
+
+        <FlowBeacons
+          beacon={shouldShowBeacon(flow.current)}
+          onDismiss={() => {
+            const updatedFlow = { ...flow, showHints: false };
+            setFlow(updatedFlow);
+          }}
+        />
+      </div>
+    </div>,
+
+    // Card 3: Mentor & Dialogue
+    <div className={css.cardContent} key="mentor">
+      <header className={css.cardHeader}>
+        <h1 className={css.cardTitle}>🧙 Mentor</h1>
+      </header>
+
+      <div className={css.mentorContent}>
+        <DialoguePanel agentName="mentor" message={agentMessage} onAskMentor={handleAskMentor} />
+
+        <div className={css.mentorInfo}>
+          <p className={css.mentorHint}>
+            💡 Swipe left/right or tap the tabs to explore
+          </p>
+          {mentorStatus === 'offline' && (
+            <p className={css.mentorWarning}>
+              Mentor tips are reconnecting. Tap Mentor Chat below for live help.
+            </p>
+          )}
+        </div>
+      </div>
+    </div>,
+  ];
+
   return (
     <AppShell
       header={<HUDPanel gameState={gameState} />}
       footer={
         <div className={css.footerContainer}>
           <button
+            className={`${css.chatButton} ${mentorStatus === 'offline' ? css.chatButtonOffline : ''}`}
+            onClick={handleAskMentor}
+            aria-label="Open mentor chat"
+          >
+            🧙 Mentor Chat
+            {mentorStatus === 'offline' && (
+              <span className={css.chatStatus}>
+                reconnecting
+              </span>
+            )}
+          </button>
+          <button
             className={css.playbookButton}
             onClick={handleViewPlaybook}
             aria-label="View Money Playbook"
           >
-            📊 View Playbook
+            📊 Playbook
           </button>
-          <MoodSelector currentMood={currentMood} onMoodChange={handleMoodChange} />
+          <div className={css.moodSelectorWrapper}>
+            <MoodSelector currentMood={currentMood} onMoodChange={handleMoodChange} />
+          </div>
         </div>
       }
     >
       <div className={`game-screen ${css.container}`}>
-        <header className={css.header}>
-          <h1 className={css.title}>
-            💰 FinQuest{profileData?.name ? ` - ${profileData.name}'s Journey` : ''}
-          </h1>
-        </header>
-
-        {/* Progress Path */}
-        <ProgressPath flow={flow} investingUnlocked={shouldUnlockInvesting(gameState)} />
-
-        {/* Quest Tracker for Month 1 */}
-        {flow.monthIndex === 0 && <QuestTracker flow={flow} />}
-
-        <div className={css.mainContent}>
-          <div className={css.centerPanel}>
-            <div className={css.eventCard}>
-              <h2 className={css.eventTitle}>{gameState.lastScenario.title}</h2>
-              <p className={css.eventDescription}>{gameState.lastScenario.description}</p>
-              {gameState.lastScenario.amount > 0 && (
-                <p className={css.eventAmount}>Amount: ${gameState.lastScenario.amount}</p>
-              )}
-            </div>
-
-            {gameState.uiHints?.showCrisisCoach && gameState.uiHints.crisisType && (
-              <CrisisBanner 
-                crisisType={gameState.uiHints.crisisType}
-                onDismiss={handleDismissCrisis}
-              />
-            )}
-
-            <DialoguePanel agentName="mentor" message={agentMessage} onAskMentor={handleAskMentor} />
-
-            {gameState.lastScenario.choices && gameState.lastScenario.choices.length > 0 ? (
-              <ChoicePanel 
-                choices={gameState.lastScenario.choices}
-                onChoiceSelect={handleChoiceSelect}
-                disabled={isSubmittingChoice}
-              />
-            ) : (
-              <div className={css.placeholder}>
-                <p>Choices are being generated...</p>
-                <button onClick={loadGameState} className={css.retryButton} disabled={isLoading}>
-                  Generate New Scenario
-                </button>
-              </div>
-            )}
+        <div className={css.cardNavWrapper}>
+          <div className={css.cardNav} role="tablist" aria-label="Game panels">
+            {cardTabs.map((tab, index) => (
+              <button
+                key={tab.label}
+                className={`${css.cardNavButton} ${activeCard === index ? css.cardNavButtonActive : ''}`}
+                onClick={() => setActiveCard(index)}
+                aria-selected={activeCard === index}
+                role="tab"
+                type="button"
+              >
+                <span className={css.cardNavIcon}>{tab.icon}</span>
+                <span className={css.cardNavLabel}>{tab.label}</span>
+              </button>
+            ))}
           </div>
+          <p className={css.swipeHint}>Swipe or tap a tab to switch cards</p>
         </div>
-
-        {/* Flow Beacons */}
-        <FlowBeacons 
-          beacon={shouldShowBeacon(flow.current)} 
-          onDismiss={() => {
-            // User dismissed the beacon, mark hints as disabled
-            const updatedFlow = { ...flow, showHints: false };
-            setFlow(updatedFlow);
-          }}
-        />
+        <div className={css.swiperRegion}>
+          <CardSwiper cards={cards} activeIndex={activeCard} onCardChange={(index) => setActiveCard(index)} />
+        </div>
 
         {/* Toast notifications */}
         <div className={css.toastContainer}>
@@ -406,7 +489,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ onInvestingUnlocked, profileDat
 
         {/* Chat Panel */}
         {showChat && (
-          <ChatPanel 
+          <ChatPanel
             onSendMessage={handleChatMessage}
             onClose={() => setShowChat(false)}
           />
