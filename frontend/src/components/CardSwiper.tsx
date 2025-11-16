@@ -14,6 +14,8 @@ export const CardSwiper: React.FC<CardSwiperProps> = ({ cards, onCardChange, act
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
+  const touchStartY = useRef<number | null>(null);
+  const isVerticalScroll = useRef(false);
 
   useEffect(() => {
     if (typeof activeIndex === 'number' && activeIndex !== currentIndex) {
@@ -32,17 +34,33 @@ export const CardSwiper: React.FC<CardSwiperProps> = ({ cards, onCardChange, act
   const onTouchStart = (e: React.TouchEvent) => {
     setTouchEnd(null);
     setTouchStart(e.targetTouches[0].clientX);
+    touchStartY.current = e.targetTouches[0].clientY;
+    isVerticalScroll.current = false;
     setIsDragging(true);
   };
 
   const onTouchMove = (e: React.TouchEvent) => {
     if (touchStart === null) return;
 
-    const currentTouch = e.targetTouches[0].clientX;
-    const diff = touchStart - currentTouch;
+    const currentTouch = e.targetTouches[0];
+    const diffX = touchStart - currentTouch.clientX;
+    const startY = touchStartY.current;
+    const diffY = startY !== null ? startY - currentTouch.clientY : 0;
+
+    if (!isVerticalScroll.current && Math.abs(diffY) > Math.abs(diffX) && Math.abs(diffY) > 6) {
+      isVerticalScroll.current = true;
+    }
+
+    if (isVerticalScroll.current) {
+      if (isDragging) {
+        setIsDragging(false);
+        setDragOffset(0);
+      }
+      return;
+    }
 
     // Apply resistance at edges
-    let offset = -diff;
+    let offset = -diffX;
     if (currentIndex === 0 && offset > 0) {
       offset = offset * 0.3; // Resistance at start
     } else if (currentIndex === cards.length - 1 && offset < 0) {
@@ -50,13 +68,26 @@ export const CardSwiper: React.FC<CardSwiperProps> = ({ cards, onCardChange, act
     }
 
     setDragOffset(offset);
-    setTouchEnd(currentTouch);
+    setTouchEnd(currentTouch.clientX);
   };
 
   const onTouchEnd = () => {
+    if (isVerticalScroll.current) {
+      setIsDragging(false);
+      setDragOffset(0);
+      setTouchStart(null);
+      setTouchEnd(null);
+      touchStartY.current = null;
+      isVerticalScroll.current = false;
+      return;
+    }
+
     if (!touchStart || !touchEnd) {
       setIsDragging(false);
       setDragOffset(0);
+      setTouchStart(null);
+      setTouchEnd(null);
+      touchStartY.current = null;
       return;
     }
 
@@ -74,6 +105,8 @@ export const CardSwiper: React.FC<CardSwiperProps> = ({ cards, onCardChange, act
     setDragOffset(0);
     setTouchStart(null);
     setTouchEnd(null);
+    touchStartY.current = null;
+    isVerticalScroll.current = false;
   };
 
   const goToCard = (index: number) => {
