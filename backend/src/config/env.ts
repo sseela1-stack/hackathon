@@ -11,9 +11,9 @@ dotenv.config();
 const envSchema = z.object({
   /**
    * Server port number
-   * @default 4000
+   * @default 3000
    */
-  PORT: z.coerce.number().int().positive().default(4000),
+  PORT: z.coerce.number().int().positive().default(3000),
 
   /**
    * Node environment
