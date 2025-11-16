@@ -154,4 +154,8 @@ export default defineConfig({
       },
     },
   },
+  preview: {
+    port: 4173,
+    allowedHosts: ['dark-baths-shout.loca.lt', '*.loca.lt'],
+  },
 });

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Generate PWA Icons</title>
+</head>
+<body>
+    <h1>PWA Icon Generator</h1>
+    <p>This page generates PWA icons. Open browser console and follow instructions.</p>
+    <canvas id="canvas192" width="192" height="192"></canvas>
+    <canvas id="canvas512" width="512" height="512"></canvas>
+    
+    <script>
+        // Generate 192x192 icon
+        const canvas192 = document.getElementById('canvas192');
+        const ctx192 = canvas192.getContext('2d');
+        ctx192.fillStyle = '#2196F3';
+        ctx192.fillRect(0, 0, 192, 192);
+        ctx192.font = 'bold 120px Arial';
+        ctx192.textAlign = 'center';
+        ctx192.textBaseline = 'middle';
+        ctx192.fillText('💰', 96, 96);
+        
+        // Generate 512x512 icon
+        const canvas512 = document.getElementById('canvas512');
+        const ctx512 = canvas512.getContext('2d');
+        ctx512.fillStyle = '#2196F3';
+        ctx512.fillRect(0, 0, 512, 512);
+        ctx512.font = 'bold 320px Arial';
+        ctx512.textAlign = 'center';
+        ctx512.textBaseline = 'middle';
+        ctx512.fillText('💰', 256, 256);
+        
+        console.log('Icons generated! Right-click each canvas and save as:');
+        console.log('- First canvas: pwa-192x192.png');
+        console.log('- Second canvas: pwa-512x512.png');
+        console.log('- Also save second canvas as: apple-touch-icon.png');
+    </script>
+</body>
+</html>
