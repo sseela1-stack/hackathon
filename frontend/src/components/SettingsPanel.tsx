@@ -2,12 +2,13 @@ import React, { useState } from 'react';
 
 interface SettingsPanelProps {
   onClose?: () => void;
+  onLogout?: () => void;
 }
 
 /**
  * Settings Panel - Accessibility settings
  */
-const SettingsPanel: React.FC<SettingsPanelProps> = ({ onClose }) => {
+const SettingsPanel: React.FC<SettingsPanelProps> = ({ onClose, onLogout }) => {
   const [highContrast, setHighContrast] = useState(false);
   const [fontSize, setFontSize] = useState<'normal' | 'large' | 'xlarge'>('normal');
 
@@ -96,6 +97,23 @@ const SettingsPanel: React.FC<SettingsPanelProps> = ({ onClose }) => {
           </div>
         </div>
       </div>
+
+      {onLogout && (
+        <div style={styles.section}>
+          <h3 style={styles.sectionHeading}>Account</h3>
+          <div style={styles.setting}>
+            <button
+              style={styles.logoutButton}
+              onClick={onLogout}
+            >
+              🚪 Logout
+            </button>
+            <p style={styles.description}>
+              Clear all data and return to profile creation
+            </p>
+          </div>
+        </div>
+      )}
 
       <div style={styles.info}>
         <p style={styles.infoText}>
@@ -201,6 +219,18 @@ const styles: { [key: string]: React.CSSProperties } = {
     margin: 0,
     fontSize: 'clamp(12px, 2.8vw, 13px)',
     color: '#555',
+  },
+  logoutButton: {
+    width: '100%',
+    padding: '14px 20px',
+    backgroundColor: '#ff4444',
+    color: 'white',
+    border: 'none',
+    borderRadius: '6px',
+    fontSize: 'clamp(14px, 3.2vw, 16px)',
+    fontWeight: '600',
+    cursor: 'pointer',
+    transition: 'all 0.2s ease',
   },
 };
 

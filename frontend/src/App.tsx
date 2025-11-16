@@ -62,6 +62,19 @@ const App: React.FC = () => {
     setHasProfile(true);
   };
 
+  const handleLogout = () => {
+    // Clear all user data from localStorage
+    localStorage.removeItem('finquest_pid');
+    localStorage.removeItem('finquest_profile');
+    localStorage.removeItem('finquest_flow_v1');
+
+    // Reset state
+    setHasProfile(false);
+    setProfileData(null);
+    setCurrentView('game');
+    setSimulationState(null);
+  };
+
   // Prefetch InvestingDistrict chunk (always show investing now)
   usePrefetchOnIdle(() => import('./pages/InvestingDistrict'), true);
 
@@ -133,7 +146,7 @@ const App: React.FC = () => {
         }
         return <SimulationSetup onStart={handleSimulationStart} onBack={() => setCurrentView('game')} />;
       case 'settings':
-        return <SettingsPanel onClose={() => setCurrentView('game')} />;
+        return <SettingsPanel onClose={() => setCurrentView('game')} onLogout={handleLogout} />;
       default:
         return <GameScreen onInvestingUnlocked={() => {}} profileData={profileData} />;
     }
