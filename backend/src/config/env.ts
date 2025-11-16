@@ -22,6 +22,13 @@ const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
 
   /**
+   * Database connection URL
+   * SQLite: file:./dev.db
+   * PostgreSQL: postgresql://USER:PASSWORD@HOST:5432/DB?schema=public
+   */
+  DATABASE_URL: z.string().min(1, 'DATABASE_URL is required'),
+
+  /**
    * Capital One Nessie API key
    * Required for financial data operations
    */
@@ -104,6 +111,11 @@ export const env = {
    * Node environment (development, test, or production)
    */
   nodeEnv: validatedEnv.NODE_ENV,
+
+  /**
+   * Database connection URL
+   */
+  databaseUrl: validatedEnv.DATABASE_URL,
 
   /**
    * Frontend application URL for CORS

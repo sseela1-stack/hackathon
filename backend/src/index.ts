@@ -8,6 +8,7 @@ import { env, isProd } from './config/env';
 import gameRoutes from './routes/gameRoutes';
 import agentRoutes from './routes/agentRoutes';
 import healthRoutes from './routes/healthRoutes';
+import { errorHandler } from './middleware/errorHandler';
 import { Server } from 'http';
 
 /**
@@ -139,50 +140,10 @@ app.use((req: Request, res: Response) => {
 });
 
 /**
- * Error Response Interface
- */
-interface ErrorResponse {
-  error: {
-    message: string;
-    code: string;
-    stack?: string;
-  };
-}
-
-/**
  * Centralized Error Handler
- * Returns standardized error response
- * Hides stack traces in production
+ * Uses errorHandler middleware for standardized error responses
  */
-app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
-  // Log error with request context
-  logger.error({
-    err,
-    req: {
-      id: req.id,
-      method: req.method,
-      url: req.url,
-    },
-  }, 'Request error');
-
-  // Determine status code
-  const statusCode = (err as any).statusCode || (err as any).status || 500;
-
-  // Build error response
-  const errorResponse: ErrorResponse = {
-    error: {
-      message: err.message || 'Internal Server Error',
-      code: (err as any).code || 'INTERNAL_SERVER_ERROR',
-    },
-  };
-
-  // Include stack trace only in non-production environments
-  if (!isProd) {
-    errorResponse.error.stack = err.stack;
-  }
-
-  res.status(statusCode).json(errorResponse);
-});
+app.use(errorHandler);
 
 /**
  * Server instance

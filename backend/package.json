@@ -7,11 +7,18 @@
     "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js",
+    "prisma:generate": "prisma generate --schema=prisma/schema.sqlite.prisma",
+    "prisma:migrate": "prisma migrate dev --schema=prisma/schema.sqlite.prisma",
+    "db:deploy:pg": "prisma migrate deploy --schema=prisma/schema.postgres.prisma",
+    "db:reset": "prisma migrate reset --schema=prisma/schema.sqlite.prisma --force",
     "test:apis": "ts-node-dev --transpile-only src/test-apis.ts",
     "test:game": "ts-node-dev --transpile-only src/test-game-logic.ts",
     "test:controller": "ts-node-dev --transpile-only src/test-controller.ts",
     "test:agents": "ts-node-dev --transpile-only src/test-agent-controller.ts",
-    "test:validate": "ts-node-dev --transpile-only src/test-validate.ts"
+    "test:validate": "ts-node-dev --transpile-only src/test-validate.ts",
+    "test:errors": "ts-node-dev --transpile-only src/test-error-handler.ts",
+    "test:rng": "ts-node-dev --transpile-only src/test-rng.ts",
+    "test:health-helpers": "ts-node-dev --transpile-only src/test-health-helpers.ts"
   },
   "keywords": [
     "finquest",
@@ -21,6 +28,7 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
+    "@prisma/client": "^5.7.1",
     "compression": "^1.8.1",
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
@@ -38,6 +46,8 @@
     "@types/http-errors": "^2.0.5",
     "@types/node": "^20.10.5",
     "pino-pretty": "^13.1.2",
+    "prisma": "^5.7.1",
+    "ts-node": "^10.9.2",
     "ts-node-dev": "^2.0.0",
     "typescript": "^5.3.3"
   }

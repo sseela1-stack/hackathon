@@ -1,0 +1,44 @@
+// Prisma schema for PostgreSQL (production)
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Player {
+  id         String      @id @default(cuid())
+  role       String
+  mood       String
+  difficulty String
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  gameState  GameState?
+  events     Event[]
+}
+
+model GameState {
+  id        String   @id @default(cuid())
+  playerId  String   @unique
+  version   Int      @default(1)
+  stateJson Json     @db.JsonB
+  health    Int
+  updatedAt DateTime @updatedAt
+  Player    Player   @relation(fields: [playerId], references: [id])
+}
+
+model Event {
+  id          String   @id @default(cuid())
+  playerId    String
+  scenarioId  String
+  choiceId    String
+  deltaJson   Json     @db.JsonB
+  healthAfter Int
+  monthIndex  Int
+  createdAt   DateTime @default(now())
+  Player      Player   @relation(fields: [playerId], references: [id])
+
+  @@index([playerId, createdAt])
+}

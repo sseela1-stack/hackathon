@@ -141,6 +141,130 @@ export function getDefaultBaseIncome(role: Role): number {
 // ============================================================================
 
 /**
+ * Calculate the ratio of on-time bill payments from payment history
+ * 
+ * @param history - Array of historical payment records with billsPaidOnTime boolean
+ * @returns Ratio between 0 and 1 (0 = no on-time payments, 1 = all on-time)
+ * 
+ * @example
+ * ```ts
+ * const history = [
+ *   { billsPaidOnTime: true },
+ *   { billsPaidOnTime: true },
+ *   { billsPaidOnTime: false }
+ * ];
+ * const ratio = paymentsOnTimeRatio(history); // 0.666...
+ * ```
+ */
+export function paymentsOnTimeRatio(
+  history: Array<{ billsPaidOnTime: boolean }>
+): number {
+  if (history.length === 0) return 1; // Default to perfect score if no history
+  
+  const onTimeCount = history.filter((h) => h.billsPaidOnTime).length;
+  return onTimeCount / history.length;
+}
+
+/**
+ * Calculate savings rate delta as a ratio of income
+ * Formula: (nextSavings - prevSavings) / income
+ * 
+ * @param prevSavings - Previous savings balance
+ * @param nextSavings - Current savings balance
+ * @param income - Monthly income for normalization
+ * @returns Ratio clamped to [0, 1] where 1 = saved 100% of income, 0 = no savings growth
+ * 
+ * @example
+ * ```ts
+ * // Saved $500 out of $2000 income
+ * const ratio = savingsRateDelta(1000, 1500, 2000); // 0.25 (25% savings rate)
+ * 
+ * // Lost savings (negative)
+ * const ratio2 = savingsRateDelta(1000, 800, 2000); // 0 (clamped from -0.1)
+ * ```
+ */
+export function savingsRateDelta(
+  prevSavings: number,
+  nextSavings: number,
+  income: number
+): number {
+  if (income <= 0) return 0; // Avoid division by zero
+  
+  const delta = nextSavings - prevSavings;
+  const ratio = delta / income;
+  
+  // Clamp to [0, 1] range (negative savings = 0, >100% savings = 1)
+  return Math.max(0, Math.min(1, ratio));
+}
+
+/**
+ * Calculate debt utilization as a ratio of monthly income (inverse contribution)
+ * Higher debt relative to income = worse score
+ * 
+ * @param debt - Current total debt balance
+ * @param income - Monthly income
+ * @returns Ratio between 0 and 1 where:
+ *   - 0 = debt >= 2x income (worst case, capped)
+ *   - 0.5 = debt = 1x income
+ *   - 1 = no debt (best case)
+ * 
+ * @example
+ * ```ts
+ * // No debt
+ * const score1 = debtUtilization(0, 3000); // 1.0 (best)
+ * 
+ * // Debt equals monthly income
+ * const score2 = debtUtilization(3000, 3000); // 0.5
+ * 
+ * // Debt is double monthly income (capped)
+ * const score3 = debtUtilization(6000, 3000); // 0.0 (worst)
+ * ```
+ */
+export function debtUtilization(debt: number, income: number): number {
+  if (income <= 0) return 0; // Worst case if no income
+  if (debt <= 0) return 1; // Best case if no debt
+  
+  const ratio = debt / income;
+  const clampedRatio = Math.min(2, ratio); // Cap at 2x income
+  
+  // Inverse contribution: lower debt = higher score
+  return 1 - clampedRatio / 2;
+}
+
+/**
+ * Calculate emergency fund in months of fixed costs coverage
+ * Capped at 6 months for scoring purposes (industry standard recommendation)
+ * 
+ * @param savings - Current savings balance
+ * @param fixedCostsTotal - Total monthly fixed costs
+ * @returns Number of months covered, capped at 6
+ * 
+ * @example
+ * ```ts
+ * // $6000 savings, $2000/month fixed costs
+ * const months1 = emergencyFundMonths(6000, 2000); // 3.0 months
+ * 
+ * // $15000 savings (more than 6 months)
+ * const months2 = emergencyFundMonths(15000, 2000); // 6.0 (capped)
+ * 
+ * // No savings
+ * const months3 = emergencyFundMonths(0, 2000); // 0.0
+ * ```
+ */
+export function emergencyFundMonths(
+  savings: number,
+  fixedCostsTotal: number
+): number {
+  if (fixedCostsTotal <= 0) return 0; // Avoid division by zero
+  if (savings <= 0) return 0; // No emergency fund
+  
+  const months = savings / fixedCostsTotal;
+  
+  // Cap at 6 months (standard financial planning recommendation)
+  return Math.min(6, months);
+}
+
+/**
  * Calculate health score based on financial metrics
  * Weights:
  * - On-time bills: 35%
@@ -153,24 +277,25 @@ export function getDefaultBaseIncome(role: Role): number {
  * @returns Health score between 0 and 100
  */
 export function calculateHealthScore(metrics: HealthMetrics): number {
-  // 1. On-time payments (35%) - already 0-1 ratio
+  // 1. On-time payments (35%) - already 0-1 ratio from helper
   const paymentsScore = metrics.paymentsOnTimeRatio * 35;
   
-  // 2. Savings rate (25%) - clamp to 0-30% range
+  // 2. Savings rate (25%) - clamp to 0-30% range for reasonable scoring
+  // Note: Helper already clamps to [0, 1], we scale to 0-30% expected range
   const savingsRate = metrics.income > 0 ? metrics.savingsDelta / metrics.income : 0;
   const savingsRateClamped = Math.max(0, Math.min(0.3, savingsRate)); // 0-30%
   const savingsScore = (savingsRateClamped / 0.3) * 25;
   
-  // 3. Debt utilization (15%) - inverse, lower is better
-  const debtRatio = metrics.income > 0 ? metrics.debt / metrics.income : 1;
-  const debtRatioClamped = Math.min(2, debtRatio); // Cap at 2x income
-  const debtScore = (1 - debtRatioClamped / 2) * 15;
+  // 3. Debt utilization (15%) - helper returns inverse contribution [0-1]
+  const debtUtilizationScore = debtUtilization(metrics.debt, metrics.income);
+  const debtScore = debtUtilizationScore * 15;
   
-  // 4. Emergency fund months (15%) - target 3-6 months
-  const emergencyMonths =
-    metrics.fixedCostsTotal > 0 ? metrics.savings / metrics.fixedCostsTotal : 0;
-  const emergencyMonthsClamped = Math.min(6, emergencyMonths);
-  const emergencyScore = (emergencyMonthsClamped / 6) * 15;
+  // 4. Emergency fund months (15%) - helper returns capped months [0-6]
+  const emergencyMonthsValue = emergencyFundMonths(
+    metrics.savings,
+    metrics.fixedCostsTotal
+  );
+  const emergencyScore = (emergencyMonthsValue / 6) * 15;
   
   // 5. Investment discipline (10%) - boolean converted to 0 or 10
   const disciplineScore = metrics.heldThroughVolatility ? 10 : 0;

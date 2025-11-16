@@ -1,9 +1,9 @@
 /**
- * Game Controller (Prisma-backed)
+ * Game Controller
  * Handles game state management, choice processing, and playbook generation
  */
 
-import { Request, Response, NextFunction } from 'express';
+import { Request, Response } from 'express';
 import { z } from 'zod';
 import { gameLogicService } from '../services/gameLogic';
 import {
@@ -13,9 +13,8 @@ import {
   calculateHealthScore,
   shouldUnlockInvesting,
 } from '../services/gameLogic';
-import { gameRepo, ConflictError } from '../services/repo';
-import { GameState, Mood, Role, Difficulty } from '../models/GameState';
-import createHttpError from 'http-errors';
+import { getGameState as loadGameState, saveGameState } from '../store';
+import { GameState, Mood } from '../models/GameState';
 
 // Default player ID for development
 const DEV_PLAYER_ID = 'dev-player-001';
@@ -45,116 +44,81 @@ function getPlayerId(req: Request): string {
  * Returns current game state for the authenticated player
  * Creates new game if player doesn't exist
  */
-export async function getGameState(
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> {
+export async function getGameState(req: Request, res: Response): Promise<void> {
   try {
     const playerId = getPlayerId(req);
 
-    // Ensure player exists in database
-    await gameRepo.ensurePlayer({
-      id: playerId,
-      role: 'student',
-      mood: 'okay',
-      difficulty: 'normal',
-    });
+    // Check if player has existing state
+    let state = loadGameState(playerId);
 
-    // Try to load existing game state
-    const existing = await gameRepo.loadState(playerId);
-
-    if (existing) {
-      res.json({
-        success: true,
-        state: existing.snapshot,
+    if (!state) {
+      // Initialize new game with defaults
+      state = gameLogicService.initializeGame(
         playerId,
-      });
-      return;
+        'student', // Default role
+        'normal' // Default difficulty
+      );
+
+      // Save initial state
+      saveGameState(playerId, state);
     }
-
-    // Initialize new game with defaults
-    const initialState = gameLogicService.initializeGame(
-      playerId,
-      'student', // Default role
-      'normal' // Default difficulty
-    );
-
-    // Calculate initial health
-    const checkingAccount = initialState.accounts.find((a) => a.type === 'checking');
-    const savingsAccount = initialState.accounts.find((a) => a.type === 'savings');
-
-    const initialHealth = calculateHealthScore({
-      paymentsOnTimeRatio: 1.0, // Perfect initial score
-      savingsDelta: 0,
-      income:
-        initialState.incomePlan.baseIncome *
-          initialState.incomePlan.difficultyMultiplier +
-        initialState.incomePlan.eventsDelta,
-      debt: 0,
-      savings: savingsAccount?.balance || 0,
-      fixedCostsTotal:
-        initialState.fixed.rent +
-        initialState.fixed.food +
-        initialState.fixed.transport +
-        initialState.fixed.phoneInternet +
-        (initialState.fixed.other || 0),
-      heldThroughVolatility: false,
-    });
-
-    // Save initial state (expectedVersion = 0 for new records)
-    await gameRepo.saveState(playerId, initialState, 0, initialHealth);
 
     res.json({
       success: true,
-      state: { ...initialState, health: initialHealth },
+      state,
       playerId,
     });
   } catch (error) {
     console.error('Error in getState:', error);
-    next(error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to retrieve game state',
+      message: error instanceof Error ? error.message : 'Unknown error',
+    });
   }
 }
 
 /**
  * POST /api/game/choice
- * Process player's choice and update game state atomically
+ * Process player's choice and update game state
  * Body: { scenarioId: string, choiceId: string, mood?: Mood }
  */
-export async function postChoice(
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> {
+export async function postChoice(req: Request, res: Response): Promise<void> {
   try {
     const playerId = getPlayerId(req);
 
     // Validate request body
     const validation = postChoiceSchema.safeParse(req.body);
     if (!validation.success) {
-      throw createHttpError(400, 'Invalid request body', {
+      res.status(400).json({
+        success: false,
+        error: 'Invalid request body',
         details: validation.error.issues,
       });
+      return;
     }
 
     const { scenarioId, choiceId, mood } = validation.data;
 
-    // Load current state with version
-    const existing = await gameRepo.loadState(playerId);
-    if (!existing) {
-      throw createHttpError(
-        404,
-        'Game state not found. Please initialize a game first by calling GET /api/game/state'
-      );
+    // Get current state
+    const currentState = loadGameState(playerId);
+    if (!currentState) {
+      res.status(404).json({
+        success: false,
+        error: 'Game state not found',
+        message: 'Please initialize a game first by calling GET /api/game/state',
+      });
+      return;
     }
-
-    const { snapshot: currentState, version: currentVersion } = existing;
 
     // Validate scenario ID matches last scenario
     if (!currentState.lastScenario || currentState.lastScenario.id !== scenarioId) {
-      throw createHttpError(400, 'Invalid scenario ID', {
-        expected: currentState.lastScenario?.id || 'none',
+      res.status(400).json({
+        success: false,
+        error: 'Invalid scenario ID',
+        message: `Expected scenario ID: ${currentState.lastScenario?.id || 'none'}`,
       });
+      return;
     }
 
     // Generate choices for validation
@@ -162,9 +126,13 @@ export async function postChoice(
     const selectedChoice = choices.find((c) => c.id === choiceId);
 
     if (!selectedChoice) {
-      throw createHttpError(400, 'Invalid choice ID. Choice not found for this scenario', {
+      res.status(400).json({
+        success: false,
+        error: 'Invalid choice ID',
+        message: 'Choice not found for this scenario',
         availableChoices: choices.map((c) => ({ id: c.id, label: c.label })),
       });
+      return;
     }
 
     // Apply choice and get new state
@@ -237,7 +205,6 @@ export async function postChoice(
     newState = { ...newState, health: healthScore };
 
     // Check if investing should be unlocked
-    const wasInvestingLocked = !currentState.unlocked.investingDistrict;
     if (!newState.unlocked.investingDistrict && shouldUnlockInvesting(newState)) {
       newState = {
         ...newState,
@@ -245,41 +212,8 @@ export async function postChoice(
       };
     }
 
-    // Get the last history entry to determine monthIndex
-    const monthIndex = newState.history.length;
-
-    // Atomic transaction: save state + append event
-    try {
-      // Save updated state with optimistic concurrency
-      await gameRepo.saveState(playerId, newState, currentVersion, healthScore);
-
-      // Append event to history (convert Partial to full GameDelta)
-      const fullDelta: any = {
-        bankDelta: selectedChoice.consequences.bankDelta || 0,
-        savingsDelta: selectedChoice.consequences.savingsDelta || 0,
-        debtDelta: selectedChoice.consequences.debtDelta || 0,
-        investDelta: selectedChoice.consequences.investDelta || 0,
-        healthDelta: selectedChoice.consequences.healthDelta || 0,
-        notes: selectedChoice.consequences.notes,
-      };
-
-      await gameRepo.appendEvent(playerId, {
-        scenarioId,
-        choiceId,
-        delta: fullDelta,
-        healthAfter: healthScore,
-        monthIndex,
-      });
-    } catch (error) {
-      if (error instanceof ConflictError) {
-        throw createHttpError(
-          409,
-          'Concurrent update detected. Please reload and try again.',
-          { type: 'version_conflict' }
-        );
-      }
-      throw error;
-    }
+    // Persist updated state
+    saveGameState(playerId, newState);
 
     res.json({
       success: true,
@@ -289,21 +223,26 @@ export async function postChoice(
         consequences: selectedChoice.consequences,
       },
       unlocked:
-        wasInvestingLocked && newState.unlocked.investingDistrict
+        !currentState.unlocked.investingDistrict && newState.unlocked.investingDistrict
           ? ['investingDistrict']
           : [],
     });
   } catch (error) {
     console.error('Error in postChoice:', error);
-    next(error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to process choice',
+      message: error instanceof Error ? error.message : 'Unknown error',
+    });
   }
 }
 
 /**
- * Analyze player patterns from event history
+ * Analyze player patterns from history
  */
-function analyzePatterns(history: Array<{ choiceId: string; delta: any }>): string[] {
+function analyzePatterns(state: GameState): string[] {
   const patterns: string[] = [];
+  const history = state.history;
 
   if (history.length < 3) {
     return ['Not enough decisions yet to identify patterns'];
@@ -388,9 +327,7 @@ function generateTips(state: GameState, patterns: string[]): string[] {
   }
 
   if (patterns.some((p) => p.includes('emergency fund'))) {
-    tips.push(
-      'Try to cover monthly expenses from checking; save your emergency fund for true emergencies'
-    );
+    tips.push('Try to cover monthly expenses from checking; save your emergency fund for true emergencies');
   }
 
   // Tip based on accounts
@@ -401,7 +338,9 @@ function generateTips(state: GameState, patterns: string[]): string[] {
     state.fixed.transport +
     state.fixed.phoneInternet +
     (state.fixed.other || 0);
-  const emergencyMonths = savingsAccount ? savingsAccount.balance / fixedTotal : 0;
+  const emergencyMonths = savingsAccount
+    ? savingsAccount.balance / fixedTotal
+    : 0;
 
   if (emergencyMonths < 3) {
     tips.push('Aim to save 3-6 months of expenses in your emergency fund');
@@ -430,38 +369,31 @@ function generateTips(state: GameState, patterns: string[]): string[] {
 
 /**
  * GET /api/game/playbook
- * Generate personalized playbook with patterns and tips from event history
+ * Generate personalized playbook with patterns and tips
  */
-export async function getPlaybook(
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> {
+export async function getPlaybook(req: Request, res: Response): Promise<void> {
   try {
     const playerId = getPlayerId(req);
 
-    // Load current state
-    const existing = await gameRepo.loadState(playerId);
-    if (!existing) {
-      throw createHttpError(
-        404,
-        'Game state not found. Please initialize a game first by calling GET /api/game/state'
-      );
+    // Get current state
+    const state = loadGameState(playerId);
+    if (!state) {
+      res.status(404).json({
+        success: false,
+        error: 'Game state not found',
+        message: 'Please initialize a game first by calling GET /api/game/state',
+      });
+      return;
     }
 
-    const state = existing.snapshot;
-
-    // Get event history from database
-    const eventHistory = await gameRepo.getHistory(playerId, 100);
-
-    // Analyze patterns from event history
-    const patterns = analyzePatterns(eventHistory);
+    // Analyze patterns
+    const patterns = analyzePatterns(state);
 
     // Generate tips
     const tips = generateTips(state, patterns);
 
     // Additional summary stats
-    const totalDays = eventHistory.length;
+    const totalDays = state.history.length;
     const checkingAccount = state.accounts.find((a) => a.type === 'checking');
     const savingsAccount = state.accounts.find((a) => a.type === 'savings');
     const investmentAccount = state.accounts.find((a) => a.type === 'investment');
@@ -485,6 +417,10 @@ export async function getPlaybook(
     });
   } catch (error) {
     console.error('Error in getPlaybook:', error);
-    next(error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to generate playbook',
+      message: error instanceof Error ? error.message : 'Unknown error',
+    });
   }
 }

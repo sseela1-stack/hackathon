@@ -1,0 +1,44 @@
+// Prisma schema for SQLite (development)
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Player {
+  id         String      @id @default(cuid())
+  role       String      // 'student' | 'earlyCareer' | 'midCareer'
+  mood       String      // 'anxious' | 'okay' | 'confident'
+  difficulty String      // 'easy' | 'normal' | 'hard'
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  gameState  GameState?
+  events     Event[]
+}
+
+model GameState {
+  id        String   @id @default(cuid())
+  playerId  String   @unique
+  version   Int      @default(1) // optimistic concurrency
+  stateJson String   // full snapshot of GameState (balances, fixed costs, flags)
+  health    Int      // 0..100 cached for quick queries
+  updatedAt DateTime @updatedAt
+  Player    Player   @relation(fields: [playerId], references: [id])
+}
+
+model Event {
+  id          String   @id @default(cuid())
+  playerId    String
+  scenarioId  String
+  choiceId    String
+  deltaJson   String   // GameDelta
+  healthAfter Int
+  monthIndex  Int
+  createdAt   DateTime @default(now())
+  Player      Player   @relation(fields: [playerId], references: [id])
+
+  @@index([playerId, createdAt])
+}
