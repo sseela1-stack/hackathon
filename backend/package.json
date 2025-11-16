@@ -10,7 +10,8 @@
     "test:apis": "ts-node-dev --transpile-only src/test-apis.ts",
     "test:game": "ts-node-dev --transpile-only src/test-game-logic.ts",
     "test:controller": "ts-node-dev --transpile-only src/test-controller.ts",
-    "test:agents": "ts-node-dev --transpile-only src/test-agent-controller.ts"
+    "test:agents": "ts-node-dev --transpile-only src/test-agent-controller.ts",
+    "test:validate": "ts-node-dev --transpile-only src/test-validate.ts"
   },
   "keywords": [
     "finquest",
@@ -25,6 +26,7 @@
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
     "helmet": "^8.1.0",
+    "http-errors": "^2.0.0",
     "pino": "^10.1.0",
     "pino-http": "^11.0.0",
     "zod": "^4.1.12"
@@ -33,6 +35,7 @@
     "@types/compression": "^1.8.1",
     "@types/cors": "^2.8.17",
     "@types/express": "^4.17.21",
+    "@types/http-errors": "^2.0.5",
     "@types/node": "^20.10.5",
     "pino-pretty": "^13.1.2",
     "ts-node-dev": "^2.0.0",

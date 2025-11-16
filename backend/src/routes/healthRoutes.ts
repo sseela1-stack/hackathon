@@ -4,12 +4,11 @@ const router = Router();
 
 /**
  * Health check route
+ * GET /api/health
  */
 router.get('/', (req: Request, res: Response) => {
   res.json({
     status: 'ok',
-    timestamp: new Date().toISOString(),
-    service: 'FinQuest Backend API',
   });
 });
 
