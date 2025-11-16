@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { GameState, Mood, MoneyPlaybook } from '../types/game';
 import { getGameState, postChoice, clearUiHints, updateMood, getPlaybook, postChatMessage } from '../api/gameApi';
-import { getMentorMessage } from '../api/agentApi';
+import { postMentorMessage, MentorReply } from '../api/agentApi';
 import HUDPanel from '../components/HUDPanel';
 import DialoguePanel from '../components/DialoguePanel';
 import MoodSelector from '../components/MoodSelector';
@@ -39,7 +39,6 @@ const GameScreen: React.FC<GameScreenProps> = ({ onInvestingUnlocked, profileDat
   const [gameState, setGameState] = useState<GameState | null>(null);
   const [previousGameState, setPreviousGameState] = useState<GameState | null>(null);
   const [currentMood, setCurrentMood] = useState<Mood>('okay');
-  const [agentMessage, setAgentMessage] = useState<string>('Loading...');
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isSubmittingChoice, setIsSubmittingChoice] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -49,7 +48,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ onInvestingUnlocked, profileDat
   const [newAchievement, setNewAchievement] = useState<string | null>(null);
   const [flow, setFlow] = useState<FlowState>(() => initializeFlow(0));
   const [showChat, setShowChat] = useState<boolean>(false);
-  const [mentorStatus, setMentorStatus] = useState<'ready' | 'offline'>('ready');
+  const [mentorStatus] = useState<'ready' | 'offline'>('ready');
   const [activeCard, setActiveCard] = useState<number>(0);
   const [scenarioCardIndex, setScenarioCardIndex] = useState<number>(0);
 
@@ -60,7 +59,6 @@ const GameScreen: React.FC<GameScreenProps> = ({ onInvestingUnlocked, profileDat
   // Load game state on mount
   useEffect(() => {
     loadGameState();
-    loadMentorMessage();
     
     // Initialize flow system
     const savedFlow = getFlow();
@@ -117,19 +115,6 @@ const GameScreen: React.FC<GameScreenProps> = ({ onInvestingUnlocked, profileDat
       setScenarioCardIndex(0);
     }
   }, [gameState?.lastScenario?.id]);
-
-  const loadMentorMessage = async () => {
-    try {
-      const message = await getMentorMessage();
-      setAgentMessage(message);
-      setMentorStatus('ready');
-    } catch (err) {
-      console.error('Failed to load mentor message:', err);
-      setMentorStatus('offline');
-      setAgentMessage('I\'m syncing with your latest choices. Open Mentor Chat for live help.');
-      showToast('Mentor chat is reconnecting. Tap Mentor Chat for live help.', 'info');
-    }
-  };
 
   const handleMoodChange = async (mood: Mood) => {
     const previousMood = currentMood;
@@ -228,8 +213,6 @@ const GameScreen: React.FC<GameScreenProps> = ({ onInvestingUnlocked, profileDat
         });
       }
 
-      // Refresh mentor message for new scenario
-      loadMentorMessage();
     } catch (err: any) {
       console.error('Failed to submit choice:', err);
       showToast(`Failed to submit choice: ${err.message}`, 'error');
@@ -272,7 +255,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ onInvestingUnlocked, profileDat
     setShowPlaybook(false);
   };
 
-  const handleAskMentor = () => {
+  const handleAskMentor = async (mentorDomain: string, input: string): Promise<{ message: string; rich?: MentorReply }> => {
     // Complete the "Ask Mentor" quest
     completeFlowStep('q.askMentor');
     const updatedFlow = getFlow();
@@ -280,6 +263,42 @@ const GameScreen: React.FC<GameScreenProps> = ({ onInvestingUnlocked, profileDat
       setFlow(updatedFlow);
     }
     
+    try {
+      setIsLoading(true);
+      
+      // Provide ALL bank details to AI agents
+      const checkingAccount = gameState?.accounts.find(a => a.type === 'checking');
+      const savingsAccount = gameState?.accounts.find(a => a.type === 'savings');
+      const investmentAccount = gameState?.accounts.find(a => a.type === 'investment');
+      
+      const response = await postMentorMessage(mentorDomain, input, {
+        // Complete financial picture
+        checkingBalance: checkingAccount?.balance || 0,
+        savingsBalance: savingsAccount?.balance || 0,
+        investmentBalance: investmentAccount?.balance || 0,
+        // Game state
+        health: gameState?.health,
+        mood: currentMood,
+        monthsPlayed: gameState?.monthsPlayed,
+        eventDescription: gameState?.lastScenario?.description,
+        // Profile info
+        playerName: profileData?.name,
+        playerRole: profileData?.role,
+        difficulty: profileData?.difficulty,
+      });
+      
+      return response;
+    } catch (error) {
+      console.error('Failed to get mentor response:', error);
+      return {
+        message: 'Sorry, I had trouble connecting. Please try again.',
+      };
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleOpenChat = () => {
     // Open chat panel
     setShowChat(true);
   };
@@ -510,7 +529,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ onInvestingUnlocked, profileDat
       </header>
 
       <div className={css.mentorContent}>
-        <DialoguePanel agentName="mentor" message={agentMessage} onAskMentor={handleAskMentor} />
+        <DialoguePanel agentName="mentor" message="Welcome to your financial mentors!" onAskMentor={handleAskMentor} />
 
         <div className={css.mentorInfo}>
           <p className={css.mentorHint}>
@@ -533,7 +552,7 @@ const GameScreen: React.FC<GameScreenProps> = ({ onInvestingUnlocked, profileDat
         <div className={css.footerContainer}>
           <button
             className={`${css.chatButton} ${mentorStatus === 'offline' ? css.chatButtonOffline : ''}`}
-            onClick={handleAskMentor}
+            onClick={handleOpenChat}
             aria-label="Open mentor chat"
           >
             🧙 Mentor Chat

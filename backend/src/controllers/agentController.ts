@@ -17,6 +17,12 @@ const VALID_AGENTS = [
   'crisisCoach',
   'futureYou',
   'translator',
+  'purchaseMentor',
+  'investingMentor',
+  'budgetMentor',
+  'debtMentor',
+  'careerMentor',
+  'safetyMentor',
 ] as const;
 
 type AgentName = typeof VALID_AGENTS[number];
@@ -25,6 +31,7 @@ type AgentName = typeof VALID_AGENTS[number];
  * Zod schemas for request validation
  */
 const agentContextSchema = z.object({
+  input: z.string().optional(), // User input for domain mentors
   context: z.any().optional(), // Flexible context object
 });
 
@@ -70,6 +77,7 @@ export async function postAgentMessage(req: Request, res: Response): Promise<voi
     // Validate request body based on agent type
     let context: any;
     let term: string | undefined;
+    let input: string | undefined;
 
     if (agentName === 'translator') {
       // Translator requires term
@@ -85,7 +93,7 @@ export async function postAgentMessage(req: Request, res: Response): Promise<voi
       term = validation.data.term;
       context = validation.data.context;
     } else {
-      // Other agents use flexible context
+      // Other agents use flexible context and optional input
       const validation = agentContextSchema.safeParse(req.body);
       if (!validation.success) {
         res.status(400).json({
@@ -95,20 +103,27 @@ export async function postAgentMessage(req: Request, res: Response): Promise<voi
         });
         return;
       }
+      input = validation.data.input;
       context = validation.data.context || {};
+      
+      // Debug logging
+      console.log(`[${agentName}] Received input:`, input);
+      console.log(`[${agentName}] Context:`, context);
     }
 
     // Generate agent reply
     const agentReply = await generateAgentReply(
       agentName as any,
       context,
-      term
+      term,
+      input
     );
 
     res.json({
       success: true,
       agent: agentReply.agent,
       message: agentReply.message,
+      rich: agentReply.rich,
       tokens: agentReply.tokens,
       playerId,
     });

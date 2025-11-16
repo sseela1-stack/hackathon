@@ -57,6 +57,14 @@ const envSchema = z.object({
    * @default gpt-4
    */
   AI_MODEL: z.string().optional().default('gpt-4'),
+
+  /**
+   * Optional: Azure OpenAI configuration
+   */
+  AZURE_OPENAI_ENDPOINT: z.string().url().optional(),
+  AZURE_OPENAI_KEY: z.string().optional(),
+  AZURE_OPENAI_DEPLOYMENT: z.string().optional(),
+  AZURE_OPENAI_API_VERSION: z.string().optional().default('2024-02-15-preview'),
 });
 
 /**
@@ -148,6 +156,16 @@ export const env = {
      * AI model identifier
      */
     model: validatedEnv.AI_MODEL,
+  },
+
+  /**
+   * Azure OpenAI configuration (optional)
+   */
+  azureOpenAI: {
+    endpoint: validatedEnv.AZURE_OPENAI_ENDPOINT,
+    key: validatedEnv.AZURE_OPENAI_KEY,
+    deployment: validatedEnv.AZURE_OPENAI_DEPLOYMENT,
+    apiVersion: validatedEnv.AZURE_OPENAI_API_VERSION,
   },
 } as const;
 

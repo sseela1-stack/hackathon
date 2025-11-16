@@ -37,9 +37,17 @@ export interface AgentContext {
   playerRole?: string;
   difficulty?: string;
   currentBalance?: number;
-  scenarioDescription?: string;
-  recentDecisions?: string[];
+  checkingBalance?: number;
+  savingsBalance?: number;
+  investmentBalance?: number;
+  debtBalance?: number;
+  health?: number;
   mood?: string;
+  monthsPlayed?: number;
+  playerName?: string;
+  scenarioDescription?: string;
+  eventDescription?: string;
+  recentDecisions?: string[];
   [key: string]: unknown;
 }
 
@@ -175,6 +183,64 @@ export class AnthropicAdapter implements AIProvider {
 }
 
 /**
+ * Azure OpenAI API Adapter
+ * Supports Azure-hosted GPT models
+ */
+export class AzureOpenAIAdapter implements AIProvider {
+  private readonly apiKey: string;
+  private readonly endpoint: string;
+  private readonly deployment: string;
+  private readonly apiVersion: string;
+
+  constructor(endpoint: string, apiKey: string, deployment: string, apiVersion: string = '2024-02-15-preview') {
+    this.endpoint = endpoint;
+    this.apiKey = apiKey;
+    this.deployment = deployment;
+    this.apiVersion = apiVersion;
+  }
+
+  async chat(messages: ChatMessage[], opts?: ChatOptions): Promise<ChatResponse> {
+    try {
+      const url = `${this.endpoint}/openai/deployments/${this.deployment}/chat/completions?api-version=${this.apiVersion}`;
+      
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'api-key': this.apiKey,
+        },
+        body: JSON.stringify({
+          messages: messages.map((m) => ({ role: m.role, content: m.content })),
+          temperature: opts?.temperature ?? 0.7,
+          max_tokens: opts?.maxTokens ?? 500,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new AIServiceError(
+          `Azure OpenAI API error: ${response.statusText} - ${errorText}`,
+          'azure-openai',
+          response.status
+        );
+      }
+
+      const data = await response.json();
+      return {
+        text: data.choices[0]?.message?.content || '',
+        tokens: data.usage?.total_tokens,
+      };
+    } catch (error) {
+      if (error instanceof AIServiceError) throw error;
+      throw new AIServiceError(
+        `Azure OpenAI request failed: ${(error as Error).message}`,
+        'azure-openai'
+      );
+    }
+  }
+}
+
+/**
  * Google Gemini API Adapter
  * Supports Gemini Pro and other Google AI models
  */
@@ -256,16 +322,29 @@ export class GeminiAdapter implements AIProvider {
 
 /**
  * Creates and returns the first available AI provider adapter
- * Priority: Gemini (if starts with AIza) > OpenAI (if starts with sk-) > Anthropic
+ * Priority: Azure OpenAI > Gemini > OpenAI > Anthropic
  */
 function createLLMProvider(): AIProvider {
+  // Check for Azure OpenAI first (preferred for reliability)
+  if (env.azureOpenAI.endpoint && env.azureOpenAI.key && env.azureOpenAI.deployment) {
+    console.log('🤖 Using Azure OpenAI adapter');
+    console.log(`   Endpoint: ${env.azureOpenAI.endpoint}`);
+    console.log(`   Deployment: ${env.azureOpenAI.deployment}`);
+    return new AzureOpenAIAdapter(
+      env.azureOpenAI.endpoint,
+      env.azureOpenAI.key,
+      env.azureOpenAI.deployment,
+      env.azureOpenAI.apiVersion
+    );
+  }
+
   const apiKey = env.ai.apiKey;
   const model = env.ai.model;
 
   // Detect provider based on API key format
   if (apiKey.startsWith('AIza')) {
     // Google Gemini API key format
-    console.log('🤖 Using Google Gemini adapter');
+    console.log('🤖 Using Google Gemini adapter (fallback)');
     return new GeminiAdapter(apiKey, model);
   } else if (apiKey.startsWith('sk-')) {
     // OpenAI API key format
@@ -422,6 +501,200 @@ What does it mean and how does it work in everyday life?`,
 }
 
 // ============================================================================
+// Domain Mentor Prompts
+// ============================================================================
+
+/**
+ * Purchase Mentor (Decision Mentor) - Need vs want guidance
+ */
+export function purchaseMentorPrompt(input: string, context?: AgentContext): PromptTemplate {
+  const checking = context?.checkingBalance ?? 0;
+  const savings = context?.savingsBalance ?? 0;
+  const investments = context?.investmentBalance ?? 0;
+  const totalLiquid = checking + savings;
+  
+  return {
+    system: `You are the Purchase Mentor. You help users decide on purchases. Stay in scope: need vs want, timing, budget, cheaper/refurb options, sinking fund.
+
+ALWAYS ask 1-2 clarifying questions first if the input is vague or missing key info (budget, urgency, alternatives considered).
+
+Domain boundaries: If asked about investing (>12 months), say "That's for investingMentor. Want me to switch?" If asked about budgeting daily expenses, redirect to budgetMentor.
+
+Safety: Educational only. No personalized financial advice. No stock tips.
+
+Format: Respond with your main advice (≤120 words), then suggest 2-3 follow-up questions or quick action ideas as short phrases.`,
+    user: `Player: ${context?.playerName || 'You'}
+Current Financial Situation:
+- Checking: $${checking.toFixed(2)}
+- Savings: $${savings.toFixed(2)}
+- Investments: $${investments.toFixed(2)}
+- Total Available: $${totalLiquid.toFixed(2)}
+Mood: ${context?.mood || 'neutral'}
+
+Player's question: "${input}"
+
+Help them think through this purchase decision considering their current financial situation.`,
+  };
+}
+
+/**
+ * Investing Mentor - Long-term, diversified basics
+ */
+export function investingMentorPrompt(input: string, context?: AgentContext): PromptTemplate {
+  const checking = context?.checkingBalance ?? 0;
+  const savings = context?.savingsBalance ?? 0;
+  const investments = context?.investmentBalance ?? 0;
+  
+  return {
+    system: `You are the Investing Mentor. You teach long-term, diversified investing basics for goals 5+ years out.
+
+NO stock/coin tips. NO market predictions. NO personalized advice. These are hard rules.
+
+If the goal is <12 months away, explain: "For short-term goals, investing is risky—use a savings bucket instead. For long-term (5+ years), here's how diversified index investing works…"
+
+If input mentions specific tickers/crypto picks, respond: "I can't provide specific picks. Here's how to think about diversified, long-term investing instead…"
+
+Ask 1 clarifying question if needed (time horizon? risk comfort?). Keep ≤120 words.`,
+    user: `Player: ${context?.playerName || 'You'}
+Current Financial Situation:
+- Checking: $${checking.toFixed(2)}
+- Savings: $${savings.toFixed(2)}
+- Already Invested: $${investments.toFixed(2)}
+Mood: ${context?.mood || 'neutral'}
+
+Player's question: "${input}"
+
+Teach them investing concepts (no picks), considering their current financial foundation.`,
+  };
+}
+
+/**
+ * Budget Mentor - Day-to-day spending guidance
+ */
+export function budgetMentorPrompt(input: string, context?: AgentContext): PromptTemplate {
+  const checking = context?.checkingBalance ?? 0;
+  const savings = context?.savingsBalance ?? 0;
+  const investments = context?.investmentBalance ?? 0;
+  const health = context?.health ?? 50;
+  
+  return {
+    system: `You are the Budget Mentor. You help with day-to-day budgeting: mapping fixed/wants/savings, trimming expenses, building the first $100 buffer.
+
+Ask 1 question to understand their current spending patterns if the input is vague.
+
+Domain boundaries: For purchase decisions, redirect to purchaseMentor. For debt strategy, redirect to debtMentor. For income ideas, redirect to careerMentor.
+
+Keep ≤120 words. End with one tiny habit they can start today (e.g., "Track one category this week").`,
+    user: `Player: ${context?.playerName || 'You'}
+Current Financial Situation:
+- Checking: $${checking.toFixed(2)}
+- Savings: $${savings.toFixed(2)}
+- Investments: $${investments.toFixed(2)}
+- Financial Health: ${health}/100
+Mood: ${context?.mood || 'neutral'}
+Months Played: ${context?.monthsPlayed || 0}
+
+Player's question: "${input}"
+
+Help them with budgeting basics considering their current finances and progress.`,
+  };
+}
+
+/**
+ * Debt Mentor - High-interest debt triage
+ */
+export function debtMentorPrompt(input: string, context?: AgentContext): PromptTemplate {
+  const checking = context?.checkingBalance ?? 0;
+  const savings = context?.savingsBalance ?? 0;
+  const debt = context?.debtBalance ?? 0;
+  
+  return {
+    system: `You are the Debt Mentor. You help with debt: pay minimums first, avoid late fees, prioritize high APR (avalanche) or small balances (snowball).
+
+Ask 1 question about their debts (balances, APRs, minimums) if info is missing.
+
+Domain boundaries: For income ideas to pay debt faster, suggest careerMentor. For emergency situations, suggest safetyMentor.
+
+NO shaming. Be supportive and concrete. Keep ≤120 words. Focus on next small step.`,
+    user: `Player: ${context?.playerName || 'You'}
+Current Financial Situation:
+- Checking: $${checking.toFixed(2)}
+- Savings: $${savings.toFixed(2)}
+- Current Debt: $${debt.toFixed(2)}
+Mood: ${context?.mood || 'neutral'}
+
+Player's question: "${input}"
+
+Help them navigate their debt situation with supportive, concrete advice.`,
+  };
+}
+
+/**
+ * Career Mentor - Safe income-boosting ideas
+ */
+export function careerMentorPrompt(input: string, context?: AgentContext): PromptTemplate {
+  const checking = context?.checkingBalance ?? 0;
+  const savings = context?.savingsBalance ?? 0;
+  const investments = context?.investmentBalance ?? 0;
+  const totalAssets = checking + savings + investments;
+  
+  return {
+    system: `You are the Career Mentor. You suggest safe, legal ways to earn more: extra shifts, freelance, micro-gigs, selling unused items, skill mini-projects.
+
+Ask 1 question about time available and skills if the input is vague (e.g., "How many hours per week? Any specific skills?").
+
+Domain boundaries: NO job promises. NO scams or unsafe methods. NO multi-level marketing. Only legitimate, time-boxed ideas.
+
+Keep ≤120 words. Provide 2 actionable ideas with realistic time estimates (e.g., "Freelance writing: 5-10 hrs/week, $100-$300/month").`,
+    user: `Player: ${context?.playerName || 'You'}
+Current Financial Situation:
+- Checking: $${checking.toFixed(2)}
+- Savings: $${savings.toFixed(2)}
+- Investments: $${investments.toFixed(2)}
+- Total Assets: $${totalAssets.toFixed(2)}
+- Financial Health: ${context?.health || 50}/100
+Role: ${context?.playerRole || 'player'}
+Mood: ${context?.mood || 'neutral'}
+
+Player's question: "${input}"
+
+Suggest safe ways to increase income based on their situation.`,
+  };
+}
+
+/**
+ * Safety Mentor - Emergency fund & crisis triage
+ */
+export function safetyMentorPrompt(input: string, context?: AgentContext): PromptTemplate {
+  const checking = context?.checkingBalance ?? 0;
+  const savings = context?.savingsBalance ?? 0;
+  const totalLiquid = checking + savings;
+  const health = context?.health ?? 50;
+  
+  return {
+    system: `You are the Safety Mentor. You focus on safety nets: emergency fund basics, essential bills first (rent/food/utilities), basic insurance concepts.
+
+If a crisis is detected (job loss, major expense, eviction threat), provide step-by-step triage calmly.
+
+Domain boundaries: For specific debt payoff, redirect to debtMentor. For daily budgeting, redirect to budgetMentor.
+
+Keep ≤120 words. Be calm and brief. Focus on immediate stability.`,
+    user: `Player: ${context?.playerName || 'You'}
+Current Financial Situation:
+- Checking: $${checking.toFixed(2)}
+- Savings: $${savings.toFixed(2)}
+- Total Emergency Fund: $${totalLiquid.toFixed(2)}
+- Financial Health: ${health}/100
+Mood: ${context?.mood || 'neutral'}
+${context?.eventDescription ? `\nCurrent Situation: ${context.eventDescription}` : ''}
+
+Player's question: "${input}"
+
+Help them build safety and handle crises with their current resources.`,
+  };
+}
+
+// ============================================================================
 // Agent Reply Generator
 // ============================================================================
 
@@ -431,22 +704,38 @@ export type AgentName =
   | 'saverSiya'
   | 'crisisCoach'
   | 'futureYou'
-  | 'translator';
+  | 'translator'
+  | 'purchaseMentor'
+  | 'investingMentor'
+  | 'budgetMentor'
+  | 'debtMentor'
+  | 'careerMentor'
+  | 'safetyMentor';
+
+export interface MentorReply {
+  text: string;
+  followUps?: string[];
+  suggestions?: string[];
+  domain: 'purchase' | 'investing' | 'budget' | 'debt' | 'career' | 'safety';
+}
 
 export interface AgentReply {
   agent: string;
   message: string;
+  rich?: MentorReply;
   tokens?: number;
 }
 
 /**
  * Generate an agent reply using the appropriate prompt template
  * Enforces style guidelines: ≤120 words, no jargon, educational tone
+ * Domain mentors support optional input parameter
  */
 export async function generateAgentReply(
   agentName: AgentName,
   context: AgentContext,
-  term?: string
+  term?: string,
+  input?: string
 ): Promise<AgentReply> {
   // Select the appropriate prompt template
   let template: PromptTemplate;
@@ -473,6 +762,42 @@ export async function generateAgentReply(
       }
       template = translatorPrompt(term, context);
       break;
+    case 'purchaseMentor':
+      if (!input) {
+        throw new AIServiceError('purchaseMentor requires an input parameter');
+      }
+      template = purchaseMentorPrompt(input, context);
+      break;
+    case 'investingMentor':
+      if (!input) {
+        throw new AIServiceError('investingMentor requires an input parameter');
+      }
+      template = investingMentorPrompt(input, context);
+      break;
+    case 'budgetMentor':
+      if (!input) {
+        throw new AIServiceError('budgetMentor requires an input parameter');
+      }
+      template = budgetMentorPrompt(input, context);
+      break;
+    case 'debtMentor':
+      if (!input) {
+        throw new AIServiceError('debtMentor requires an input parameter');
+      }
+      template = debtMentorPrompt(input, context);
+      break;
+    case 'careerMentor':
+      if (!input) {
+        throw new AIServiceError('careerMentor requires an input parameter');
+      }
+      template = careerMentorPrompt(input, context);
+      break;
+    case 'safetyMentor':
+      if (!input) {
+        throw new AIServiceError('safetyMentor requires an input parameter');
+      }
+      template = safetyMentorPrompt(input, context);
+      break;
     default:
       throw new AIServiceError(`Unknown agent: ${agentName}`);
   }
@@ -490,14 +815,113 @@ export async function generateAgentReply(
       maxTokens: 800, // Increased for Gemini 2.5 Flash thinking tokens + output
     });
 
+    const messageText = response.text.trim();
+    
+    // For domain mentors, create rich responses with suggestions
+    const domainMentors = ['purchaseMentor', 'investingMentor', 'budgetMentor', 'debtMentor', 'careerMentor', 'safetyMentor'];
+    if (domainMentors.includes(agentName)) {
+      const domainMap: Record<string, 'purchase' | 'investing' | 'budget' | 'debt' | 'career' | 'safety'> = {
+        purchaseMentor: 'purchase',
+        investingMentor: 'investing',
+        budgetMentor: 'budget',
+        debtMentor: 'debt',
+        careerMentor: 'career',
+        safetyMentor: 'safety',
+      };
+      
+      // Generate contextual follow-ups based on domain
+      const followUpMap: Record<string, string[]> = {
+        purchaseMentor: ["Is this a need or want?", "Can I wait 30 days?", "Are there cheaper alternatives?"],
+        investingMentor: ["Do I have emergency savings?", "What's my timeline?", "Should I learn more first?"],
+        budgetMentor: ["What's my biggest expense?", "Can I cut anything?", "How do I track spending?"],
+        debtMentor: ["What are my interest rates?", "Can I pay extra?", "Should I consolidate?"],
+        careerMentor: ["What skills do I have?", "How much time can I spare?", "What's realistic income?"],
+        safetyMentor: ["Do I have $500 saved?", "What are my essentials?", "Who can I ask for help?"],
+      };
+      
+      const suggestionMap: Record<string, string[]> = {
+        purchaseMentor: ["Start a sinking fund", "Try the 24-hour rule", "Check refurbished options"],
+        investingMentor: ["Build emergency fund first", "Learn about index funds", "Start with 1% of income"],
+        budgetMentor: ["Try 50/30/20 rule", "Track one week of spending", "Find one expense to cut"],
+        debtMentor: ["List all debts by rate", "Pay minimums + extra to one", "Call creditors if struggling"],
+        careerMentor: ["Update skills list", "Check freelance sites", "Ask about overtime"],
+        safetyMentor: ["Save $20 this week", "List essential expenses", "Find local resources"],
+      };
+      
+      return {
+        agent: agentName,
+        message: messageText,
+        rich: {
+          text: messageText,
+          followUps: followUpMap[agentName] || [],
+          suggestions: suggestionMap[agentName] || [],
+          domain: domainMap[agentName],
+        },
+        tokens: response.tokens,
+      };
+    }
+
     return {
       agent: agentName,
-      message: response.text.trim(),
+      message: messageText,
       tokens: response.tokens,
     };
   } catch (error) {
+    const errorMessage = (error as Error).message;
+    
+    // If rate limited, provide helpful fallback responses
+    if (errorMessage.includes('Too Many Requests') || errorMessage.includes('429')) {
+      // Generate dynamic fallback based on user input
+      const userQuestion = input || 'your question';
+      
+      const fallbackResponses: Record<AgentName, string> = {
+        mentor: `I'm here to help with "${userQuestion}"! Think about your financial goals - what matters most to you right now? I can guide you on budgeting, saving, debt, and more.`,
+        purchaseMentor: `Great question about "${userQuestion}"! Let me help: Is this a need or a want? Can you afford it without affecting essentials? Will you still value this in 30 days? Consider waiting 24 hours before deciding.`,
+        investingMentor: `Good thinking about "${userQuestion}"! Key principle: start with emergency savings first (3-6 months expenses), then consider low-cost index funds for long-term goals (5+ years). Never invest money you'll need soon.`,
+        budgetMentor: `Let's tackle "${userQuestion}"! Try the 50/30/20 rule: 50% needs, 30% wants, 20% savings. What's your biggest spending category? Even cutting $5/day saves $150/month! Track your spending for one week to find opportunities.`,
+        debtMentor: `I understand you're asking about "${userQuestion}". Strategy: pay minimums on everything, then focus extra payments using avalanche method (highest interest first) or snowball method (smallest balance first for motivation). You've got this!`,
+        careerMentor: `Regarding "${userQuestion}" - let's explore options! Consider: What skills do you have? Ideas: freelancing (Upwork, Fiverr), tutoring, pet sitting, food delivery. Start small - even $100-200/month helps build momentum.`,
+        safetyMentor: `About "${userQuestion}" - financial safety first! Your emergency fund goal: $500-1000 for starters, then 3-6 months of expenses. Priority order: 1) Keep essentials paid, 2) Build small buffer, 3) Avoid high-interest debt.`,
+        spenderSam: `Hey, about "${userQuestion}" - I usually say go for it, but let's think... Can you afford this without touching emergency savings? Will it bring lasting joy? Sometimes waiting 24 hours helps clarify!`,
+        saverSiya: `Hi! Regarding "${userQuestion}" - every dollar saved is a step toward security. Small consistent savings add up! Even $20/week becomes $1,040/year. What's one small expense you could reduce this week?`,
+        crisisCoach: `I'm here for you with "${userQuestion}". In crisis: 1) Breathe - you'll get through this, 2) Prioritize: food, shelter, utilities, minimum debt payments, 3) Contact creditors to explain - many have hardship programs.`,
+        futureYou: `Thinking about "${userQuestion}" - imagine yourself 5 years from now. What financial decisions would they thank you for today? Small consistent actions compound: saving, learning, avoiding bad debt.`,
+        translator: `Happy to explain "${userQuestion}" in plain language! Financial terms can be confusing, but I'll break it down without the jargon. What specific term would you like me to explain?`,
+      };
+      
+      const domainMentors = ['purchaseMentor', 'investingMentor', 'budgetMentor', 'debtMentor', 'careerMentor', 'safetyMentor'];
+      if (domainMentors.includes(agentName)) {
+        const domainMap: Record<string, 'purchase' | 'investing' | 'budget' | 'debt' | 'career' | 'safety'> = {
+          purchaseMentor: 'purchase',
+          investingMentor: 'investing',
+          budgetMentor: 'budget',
+          debtMentor: 'debt',
+          careerMentor: 'career',
+          safetyMentor: 'safety',
+        };
+        
+        return {
+          agent: agentName,
+          message: fallbackResponses[agentName] || "Our AI mentor is temporarily busy. Please try again in a moment!",
+          rich: {
+            text: fallbackResponses[agentName] || "Our AI mentor is temporarily busy. Please try again in a moment!",
+            followUps: ["Try again", "Ask something else", "Switch mentor"],
+            suggestions: [],
+            domain: domainMap[agentName],
+          },
+          tokens: 0,
+        };
+      }
+      
+      return {
+        agent: agentName,
+        message: fallbackResponses[agentName] || "Our AI mentor is temporarily busy. Please try again in a moment!",
+        tokens: 0,
+      };
+    }
+    
     throw new AIServiceError(
-      `Failed to generate ${agentName} reply: ${(error as Error).message}`,
+      `Failed to generate ${agentName} reply: ${errorMessage}`,
       agentName
     );
   }

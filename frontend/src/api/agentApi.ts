@@ -22,13 +22,30 @@ function getPlayerId(): string {
 export interface AgentMessageContext {
   eventDescription?: string;
   userBalance?: number;
+  checkingBalance?: number;
+  savingsBalance?: number;
+  investmentBalance?: number;
+  debtBalance?: number;
+  health?: number;
   mood?: string;
+  monthsPlayed?: number;
+  playerName?: string;
+  playerRole?: string;
+  difficulty?: string;
   previousChoices?: string[];
+}
+
+export interface MentorReply {
+  text: string;
+  followUps?: string[];
+  suggestions?: string[];
+  domain: 'purchase' | 'investing' | 'budget' | 'debt' | 'career' | 'safety';
 }
 
 export interface AgentMessageResponse {
   agent: AgentType;
   message: string;
+  rich?: MentorReply;
 }
 
 /**
@@ -100,4 +117,40 @@ export const getFutureYouMessage = (context?: AgentMessageContext): Promise<stri
  */
 export const getTranslatorMessage = (context?: AgentMessageContext): Promise<string> => {
   return getAgentMessage('translator', context);
+};
+
+/**
+ * Post a message to a domain mentor and get a rich response
+ */
+export const postMentorMessage = async (
+  mentorDomain: string,
+  input: string,
+  context?: AgentMessageContext
+): Promise<{ message: string; rich?: MentorReply }> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/agent/${mentorDomain}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-player-id': getPlayerId(),
+      },
+      body: JSON.stringify({ 
+        input,
+        context: context || {} 
+      }),
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Failed to get mentor message: ${response.statusText}`);
+    }
+    
+    const data = await response.json();
+    return { 
+      message: data.message,
+      rich: data.rich 
+    };
+  } catch (error) {
+    console.error(`Error getting message from ${mentorDomain}:`, error);
+    throw error;
+  }
 };
